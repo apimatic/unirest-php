@@ -1,9 +1,9 @@
 {
-    "name" : "zeeshanejaz/unirest-php",
+    "name" : "apimatic/unirest-php",
     "description" : "Unirest PHP",
     "keywords" : ["rest", "curl", "http", "client"],
     "type" : "library",
-    "homepage" : "https://github.com/zeeshanejaz/unirest-php",
+    "homepage" : "https://github.com/apimatic/unirest-php",
     "license" : "MIT",
     "authors" : [
         {
