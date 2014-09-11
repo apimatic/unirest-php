@@ -1,6 +1,7 @@
 <?php
 
 namespace Unirest;
+use \Exception;
 
 class HttpRequest 
 {
