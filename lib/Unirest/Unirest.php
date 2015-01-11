@@ -78,6 +78,39 @@ class Unirest
     }
     
     /**
+     * Prepares a file for upload. To be used inside the parameters declaration for a request.
+     * @param string $path The file path
+     */
+    public static function file($path)
+    {
+        if (function_exists("curl_file_create")) {
+            return curl_file_create($path);
+        } else {
+            return "@" . $path;
+        }
+    }
+    
+    /**
+     * This function is useful for serializing multidimensional arrays, and avoid getting
+     * the "Array to string conversion" notice
+     */
+    public static function http_build_query_for_curl($arrays, &$new = array(), $prefix = null)
+    {
+        if (is_object($arrays)) {
+            $arrays = get_object_vars($arrays);
+        }
+        
+        foreach ($arrays AS $key => $value) {
+            $k = isset($prefix) ? $prefix . '[' . $key . ']' : $key;
+            if (!$value instanceof \CURLFile AND (is_array($value) OR is_object($value))) {
+                Unirest::http_build_query_for_curl($value, $new, $k);
+            } else {
+                $new[$k] = $value;
+            }
+        }
+    }
+    
+    /**
      * Send a cURL request
      * @param string $httpMethod HTTP method to use (based off \Unirest\HttpMethod constants)
      * @param string $url URL to send the request to
