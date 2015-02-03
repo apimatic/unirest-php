@@ -155,10 +155,10 @@ class HttpRequest
      */
     public static function file($path)
     {
-        if (function_exists("curl_file_create")) {
-            return curl_file_create($path);
+        if (function_exists('curl_file_create')) {
+            return curl_file_create($filename, $mimetype = '', $postname = '');
         } else {
-            return "@" . $path;
+            return sprintf('@%s;filename=%s;type=%s', $filename, $postname ?: basename($filename), $mimetype);
         }
     }
     
