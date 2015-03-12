@@ -3,9 +3,12 @@
   "description": "Unirest PHP",
   "keywords": ["rest", "curl", "http", "https", "client"],
   "type": "library",
-  "homepage": "https://github.com/Mashape/unirest-php",
+  "homepage": "https://github.com/apimatic/unirest-php",
   "license": "MIT",
-  "author": "Mashape <opensource@mashape.com> (https://www.mashape.com)",
+  "authors": [
+	"Mashape <opensource@mashape.com> (https://www.mashape.com)",
+	"APIMATIC <zeeshan@apimatic.io> (https://apimatic.io)"
+  ],
   "require": {
     "php": ">=5.4.0",
     "ext-curl": "*",
@@ -21,6 +24,6 @@
     }
   },
   "support": {
-    "email": "opensource@mashape.com"
+    "email": "zeeshan@apimatic.io"
   }
 }

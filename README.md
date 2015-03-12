@@ -1,11 +1,4 @@
-# Unirest for PHP [![Build Status][travis-image]][travis-url] [![version][packagist-version]][packagist-url]
-
-[![Downloads][packagist-downloads]][packagist-url]
-[![Code Climate][codeclimate-quality]][codeclimate-url]
-[![Coverage Status][codeclimate-coverage]][codeclimate-url]
-[![Dependencies][versioneye-image]][versioneye-url]
-[![Gitter][gitter-image]][gitter-url]
-[![License][packagist-license]][license-url]
+# Unirest for PHP
 
 Unirest is a set of lightweight HTTP libraries available in [multiple languages](http://unirest.io).
 
@@ -32,7 +25,7 @@ To install unirest-php with Composer, just add the following to your `composer.j
 ```json
 {
     "require-dev": {
-        "mashape/unirest-php": "2.*"
+        "apimatic/unirest-php": "2.*"
     }
 }
 ```
@@ -40,13 +33,13 @@ To install unirest-php with Composer, just add the following to your `composer.j
 or by running the following command:
 
 ```shell
-composer require mashape/unirest-php
+composer require apimatic/unirest-php
 ```
 
 This will get you the latest version of the reporter and install it. If you do want the master, untagged, version you may use the command below:
 
 ```shell
-composer require mashape/php-test-reporter:@dev-master
+composer require apimatic/php-test-reporter:@dev-master
 ```
 
 Composer installs autoloader at `./vendor/autoloader.php`. to include the library in your script, add:
@@ -57,14 +50,14 @@ require_once 'vendor/autoload.php';
 
 If you use Symfony2, autoloader has to be detected automatically.
 
-*You can see this library on [Packagist](https://packagist.org/packages/mashape/unirest-php).*
+
 
 ### Install from source
 
 Unirest-PHP requires PHP `v5.4+`. Download the PHP library from Github, then include `Unirest.php` in your script:
 
 ```shell
-git clone git@github.com:Mashape/unirest-php.git 
+git clone git@github.com:apimatic/unirest-php.git 
 ```
 
 ```php
@@ -81,7 +74,7 @@ So you're probably wondering how using Unirest makes creating requests in PHP ea
 $headers = array("Accept" => "application/json");
 $body = array("foo" => "hellow", "bar" => "world");
 
-$response = Unirest\Request::post("http://mockbin.com/request", $headers, $body);
+$response = Unirest\Unirest::post("http://mockbin.com/request", $headers, $body);
 
 $response->code;        // HTTP Status code
 $response->headers;     // Headers
@@ -97,7 +90,7 @@ To upload files in a multipart form representation use the return value of `Unir
 $headers = array("Accept" => "application/json");
 $body = array("file" => Unirest\File::add("/tmp/file.txt"));
 
-$response = Unirest\Request::post("http://mockbin.com/request", $headers, $body);
+$response = Unirest\Unirest::post("http://mockbin.com/request", $headers, $body);
  ```
  
 ### Custom Entity Body
@@ -107,7 +100,7 @@ Sending a custom body such as a JSON Object rather than a string or form style p
 $headers = array("Accept" => "application/json");
 $body =   json_encode(array("foo" => "hellow", "bar" => "world"));
 
-$response = Unirest\Request::post("http://mockbin.com/request", $headers, $body);
+$response = Unirest\Unirest::post("http://mockbin.com/request", $headers, $body);
 ```
 
 ### Authentication
@@ -115,14 +108,14 @@ $response = Unirest\Request::post("http://mockbin.com/request", $headers, $body)
 First, if you are using [Mashape][mashape-url]:
 ```php
 // Mashape auth
-Unirest\Request::setMashapeKey('<mashape_key>');
+Unirest\Unirest::setMashapeKey('<mashape_key>');
 ```
 
 Otherwise, passing a username, password *(optional)*, defaults to Basic Authentication:
 
 ```php
 // basic auth
-Unirest\Request::auth('username', 'password');
+Unirest\Unirest::auth('username', 'password');
 ```
 
 The third parameter, which is a bitmask, will Unirest which HTTP authentication method(s) you want it to use for your proxy authentication.
@@ -145,25 +138,25 @@ If more than one bit is set, Unirest *(at PHP's libcurl level)* will first query
 
 ```php
 // custom auth method
-Unirest\Request::proxyAuth('username', 'password', CURLAUTH_DIGEST);
+Unirest\Unirest::proxyAuth('username', 'password', CURLAUTH_DIGEST);
 ```
 
 Previous versions of **Unirest** support *Basic Authentication* by providing the `username` and `password` arguments:
 
 ```php
-$response = Unirest\Request::get("http://mockbin.com/request", null, null, "username", "password");
+$response = Unirest\Unirest::get("http://mockbin.com/request", null, null, "username", "password");
 ```
 
-**This has been deprecated, and will be completely removed in `v.3.0.0` please use the `Unirest\Request::auth()` method instead**
+**This has been deprecated, and will be completely removed in `v.3.0.0` please use the `Unirest\Unirest::auth()` method instead**
 
 ### Request Object
 
 ```php
-Unirest\Request::get($url, $headers = array(), $parameters = null)
-Unirest\Request::post($url, $headers = array(), $body = null)
-Unirest\Request::put($url, $headers = array(), $body = null)
-Unirest\Request::patch($url, $headers = array(), $body = null)
-Unirest\Request::delete($url, $headers = array(), $body = null)
+Unirest\Unirest::get($url, $headers = array(), $parameters = null)
+Unirest\Unirest::post($url, $headers = array(), $body = null)
+Unirest\Unirest::put($url, $headers = array(), $body = null)
+Unirest\Unirest::patch($url, $headers = array(), $body = null)
+Unirest\Unirest::delete($url, $headers = array(), $body = null)
 ```
   
 - `url` - Endpoint, address, or uri to be acted upon and requested information from.
@@ -173,9 +166,12 @@ Unirest\Request::delete($url, $headers = array(), $body = null)
 You can send a request with any [standard](http://www.iana.org/assignments/http-methods/http-methods.xhtml) or custom HTTP Method:
 
 ```php
-Unirest\Request::send(Unirest\Method::LINK, $url, $headers = array(), $body);
+$request = Unirest\Unirest::prepare(Unirest\Method::LINK, $url, $headers = array(), $body);
 
-Unirest\Request::send('CHECKOUT', $url, $headers = array(), $body);
+$request = Unirest\Unirest::prepare('CHECKOUT', $url, $headers = array(), $body);
+
+//and then
+$response = $request->getResponse();
 ```
 
 ### Response Object
@@ -199,7 +195,7 @@ sometime you may want to return associative arrays, limit the depth of recursion
 To do so, simply set the desired options using the `jsonOpts` request method:
 
 ```php
-Unirest\Request::jsonOpts(true, 512, JSON_NUMERIC_CHECK & JSON_FORCE_OBJECT & JSON_UNESCAPED_SLASHES);
+Unirest\Unirest::jsonOpts(true, 512, JSON_NUMERIC_CHECK & JSON_FORCE_OBJECT & JSON_UNESCAPED_SLASHES);
 ```
 
 #### Timeout
@@ -207,7 +203,7 @@ Unirest\Request::jsonOpts(true, 512, JSON_NUMERIC_CHECK & JSON_FORCE_OBJECT & JS
 You can set a custom timeout value (in **seconds**):
 
 ```php
-Unirest\Request::timeout(5); // 5s timeout
+Unirest\Unirest::timeout(5); // 5s timeout
 ```
 
 #### Proxy
@@ -220,13 +216,13 @@ you can also set the proxy type to be one of `CURLPROXY_HTTP`, `CURLPROXY_HTTP_1
 
 ```php
 // quick setup with default port: 1080
-Unirest\Request::proxy('10.10.10.1');
+Unirest\Unirest::proxy('10.10.10.1');
 
 // custom port and proxy type
-Unirest\Request::proxy('10.10.10.1', 8080, CURLPROXY_HTTP);
+Unirest\Unirest::proxy('10.10.10.1', 8080, CURLPROXY_HTTP);
 
 // enable tunneling
-Unirest\Request::proxy('10.10.10.1', 8080, CURLPROXY_HTTP, true);
+Unirest\Unirest::proxy('10.10.10.1', 8080, CURLPROXY_HTTP, true);
 ```
 
 ##### Proxy Authenticaton
@@ -235,7 +231,7 @@ Passing a username, password *(optional)*, defaults to Basic Authentication:
 
 ```php
 // basic auth
-Unirest\Request::proxyAuth('username', 'password');
+Unirest\Unirest::proxyAuth('username', 'password');
 ```
 
 The third parameter, which is a bitmask, will Unirest which HTTP authentication method(s) you want it to use for your proxy authentication. 
@@ -246,7 +242,7 @@ See [Authentication](#authentication) for more details on methods supported.
 
 ```php
 // basic auth
-Unirest\Request::proxyAuth('username', 'password', CURLAUTH_DIGEST);
+Unirest\Unirest::proxyAuth('username', 'password', CURLAUTH_DIGEST);
 ```
 
 #### Default Request Headers
@@ -254,14 +250,14 @@ Unirest\Request::proxyAuth('username', 'password', CURLAUTH_DIGEST);
 You can set default headers that will be sent on every request:
 
 ```php
-Unirest\Request::defaultHeader("Header1", "Value1");
-Unirest\Request::defaultHeader("Header2", "Value2");
+Unirest\Unirest::defaultHeader("Header1", "Value1");
+Unirest\Unirest::defaultHeader("Header2", "Value2");
 ```
 
 You can do set default headers in bulk:
 
 ```php
-Unirest\Request::defaultHeaders(array(
+Unirest\Unirest::defaultHeaders(array(
     "Header1" => "Value1",
     "Header2" => "Value2"
 ));
@@ -270,7 +266,7 @@ Unirest\Request::defaultHeaders(array(
 You can clear the default headers anytime with:
 
 ```php
-Unirest\Request::clearDefaultHeaders();
+Unirest\Unirest::clearDefaultHeaders();
 ```
 
 #### SSL validation
@@ -278,7 +274,7 @@ Unirest\Request::clearDefaultHeaders();
 You can explicitly enable or disable SSL certificate validation when consuming an SSL protected endpoint:
 
 ```php
-Unirest\Request::verifyPeer(false); // Disables SSL cert validation
+Unirest\Unirest::verifyPeer(false); // Disables SSL cert validation
 ```
 
 By default is `true`.
@@ -287,10 +283,10 @@ By default is `true`.
 
 ```php
 // alias for `curl_getinfo`
-Unirest\Request::getInfo()
+Unirest\Unirest::getInfo()
 
 // returns internal cURL handle
-Unirest\Request::getCurlHandle()
+Unirest\Unirest::getCurlHandle()
 ```
 
 ----
