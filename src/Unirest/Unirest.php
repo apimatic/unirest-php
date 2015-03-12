@@ -6,7 +6,7 @@ use Unirest\Method;
 use Unirest\Response;
 use Unirest\Request;
 
-class Request
+class Unirest
 {
     private static $handle = null;
     private static $jsonOpts = array();
