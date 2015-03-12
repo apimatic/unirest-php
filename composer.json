@@ -1,5 +1,5 @@
 {
-  "name": "mashape/unirest-php",
+  "name": "apimatic/unirest-php",
   "description": "Unirest PHP",
   "keywords": ["rest", "curl", "http", "https", "client"],
   "type": "library",
