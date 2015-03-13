@@ -66,8 +66,12 @@ class Request
         $this->headers = array_merge($this->headers, $flattennedHeaders);
         return $this;
     }
-	
-	private static function createHeader($key, $val)
+	/**
+	 * Create a formatted header from a given key and value
+	 * @param string $key the key to use for the header
+	 * @param string $val the value to use for the header
+	 */
+    private static function createHeader($key, $val)
     {
         $key = trim($key);
         return $key . ": " . $val;
