@@ -7,32 +7,32 @@ class Request
     /**
      * @param HttpMethod $httpMethod is the method for sending the cURL request e.g., GET/POST/PUT/DELETE/PATCH
      */
-    public $method;
+    protected $method;
 
     /**
      * @param string $url is for sending the cURL request
      */
-    public $url;
+    protected $url;
 
     /**
      * @param mixed $body is the request body
      */
-    public $body = NULL;
+    protected $body = NULL;
 
     /**
      * @param array $headers is the collection of outgoing finalized headers
      */
-    public $headers = array();
+    protected $headers = array();
 
     /**
      * @param string $username is the user name for Basic Authentication
      */
-    public $username = NULL;
+    protected $username = NULL;
 
     /**
      * @param string $password is the password for Basic Authentication
      */
-    public $password = NULL;
+    protected $password = NULL;
 
     /**
      * @param HttpMethod $httpMethod HTTP Method for invoking the cURL request
@@ -50,5 +50,64 @@ class Request
         $this->headers = $headers;
         $this->username = $username;
         $this->password = $password;
+    }
+	
+	/**
+     * 
+     * @param type $newHeaders are the new headers that need to be appended
+     * @return \Unirest\HttpRequest 
+     */
+    public function headers($newHeaders)
+    {
+        $flattennedHeaders = array();
+        foreach ($newHeaders as $key => $val) {
+            $flattennedHeaders[] = $this->createHeader($key, $val);
+        }        
+        $this->headers = array_merge($this->headers, $flattennedHeaders);
+        return $this;
+    }
+	
+	private static function createHeader($key, $val)
+    {
+        $key = trim($key);
+        return $key . ": " . $val;
+    }
+	
+    /**
+     * Return a property of the response if it exists.
+     * Possibilities include: code, raw_body, headers, body (if the response is json-decodable)
+     * @return mixed
+     */
+    public function __get($property)
+    {
+        if (property_exists($this, $property)) {
+            //UTF-8 is recommended for correct JSON serialization
+            $value = $this->$property;
+            if (is_string($value) && mb_detect_encoding($value, "UTF-8", TRUE) != "UTF-8") {
+                return utf8_encode($value);
+            }
+            else {
+                return $value;
+            }
+        }
+    }
+    
+    /**
+     * Set the properties of this object
+     * @param string $property the property name
+     * @param mixed $value the property value
+     */
+    public function __set($property, $value)
+    {
+        if (property_exists($this, $property)) {
+            //UTF-8 is recommended for correct JSON serialization
+            if (is_string($value) && mb_detect_encoding($value, "UTF-8", TRUE) != "UTF-8") {
+                $this->$property = utf8_encode($value);
+            }
+            else {
+                $this->$property = $value;
+            }
+        }
+        return $this;
     }
 }
