@@ -7,32 +7,32 @@ class Request
     /**
      * @param HttpMethod $httpMethod is the method for sending the cURL request e.g., GET/POST/PUT/DELETE/PATCH
      */
-    protected $httpMethod;
+    public $method;
 
     /**
      * @param string $url is for sending the cURL request
      */
-    protected $url;
+    public $url;
 
     /**
      * @param mixed $body is the request body
      */
-    protected $body = NULL;
+    public $body = NULL;
 
     /**
      * @param array $headers is the collection of outgoing finalized headers
      */
-    protected $headers = array();
+    public $headers = array();
 
     /**
      * @param string $username is the user name for Basic Authentication
      */
-    protected $username = NULL;
+    public $username = NULL;
 
     /**
      * @param string $password is the password for Basic Authentication
      */
-    protected $password = NULL;
+    public $password = NULL;
 
     /**
      * @param HttpMethod $httpMethod HTTP Method for invoking the cURL request
