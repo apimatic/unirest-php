@@ -44,7 +44,7 @@ class Request
      */
     public function __construct($httpMethod, $url, $body = NULL, $headers = array(), $username = NULL, $password = NULL)
     {
-        $this->httpMethod = $httpMethod;
+        $this->method = $httpMethod;
         $this->url = $url;
         $this->body = $body;		
         $this->headers = $headers;
