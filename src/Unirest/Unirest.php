@@ -311,8 +311,8 @@ class Unirest
 
         return $result;
     }
-	
-	    /**
+    
+        /**
      * Send a cURL request
      * @param Unirest\Method $method HTTP method to use
      * @param string $url URL to send the request to
@@ -324,9 +324,9 @@ class Unirest
      * @return Unirest\Request
      */
     public static function prepare($method, $url, $body = null, $headers = array(), $username = null, $password = null)
-	{
-		return new Request($method, $url, $body, $headers, $username, $password);
-	}
+    {
+        return new Request($method, $url, $body, $headers, $username, $password);
+    }
 
     /**
      * Send a cURL request

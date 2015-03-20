@@ -36,11 +36,11 @@ class Request
 
     /**
      * @param HttpMethod $httpMethod HTTP Method for invoking the cURL request
-	 * @param string $url URL for invoking the cURL request
-	 * @param string $body raw body for the cURL request
+     * @param string $url URL for invoking the cURL request
+     * @param string $body raw body for the cURL request
      * @param string $headers raw header string from cURL request
-	 * @param string $username username for the basic authentication
-	 * @param string $password password for the basic authentication
+     * @param string $username username for the basic authentication
+     * @param string $password password for the basic authentication
      */
     public function __construct($httpMethod, $url, $body = NULL, $headers = array(), $username = NULL, $password = NULL)
     {
@@ -51,8 +51,8 @@ class Request
         $this->username = $username;
         $this->password = $password;
     }
-	
-	/**
+    
+    /**
      * 
      * @param type $newHeaders are the new headers that need to be appended
      * @return \Unirest\HttpRequest 
@@ -66,17 +66,17 @@ class Request
         $this->headers = array_merge($this->headers, $flattennedHeaders);
         return $this;
     }
-	/**
-	 * Create a formatted header from a given key and value
-	 * @param string $key the key to use for the header
-	 * @param string $val the value to use for the header
-	 */
+    /**
+     * Create a formatted header from a given key and value
+     * @param string $key the key to use for the header
+     * @param string $val the value to use for the header
+     */
     private static function createHeader($key, $val)
     {
         $key = trim($key);
         return $key . ": " . $val;
     }
-	
+    
     /**
      * Return a property of the response if it exists.
      * Possibilities include: code, raw_body, headers, body (if the response is json-decodable)
