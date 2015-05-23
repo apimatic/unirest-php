@@ -378,7 +378,7 @@ class Unirest
         }
 
         // supporting deprecated http auth method
-        if (!empty($username)) {
+        if (!empty($request->username)) {
             curl_setopt_array(self::$handle, array(
                 CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
                 CURLOPT_USERPWD => $request->username . ':' . $request->password
