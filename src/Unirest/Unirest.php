@@ -112,6 +112,20 @@ class Unirest
     }
 
     /**
+     * Set authentication method to use
+     *
+     * @param string $username authentication username
+     * @param string $password authentication password
+     * @param string $method authentication method
+     */
+    public static function auth($username = '', $password = '', $method = CURLAUTH_BASIC)
+    {
+        self::$auth['user'] = $username;
+        self::$auth['pass'] = $password;
+        self::$auth['method'] = $method;
+    }
+
+    /**
      * Set proxy to use
      *
      * @param string $address proxy address
@@ -363,14 +377,15 @@ class Unirest
             curl_setopt(self::$handle, CURLOPT_TIMEOUT, self::$socketTimeout);
         }
 
-        // supporting basic auth from request
-        if (!empty($request->username)) {
+        // supporting basic auth method
+        if (!is_null($request->username)) {
             curl_setopt_array(self::$handle, array(
                 CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
                 CURLOPT_USERPWD => $request->username . ':' . $request->password
             ));
         }
 		
+		// supporting deprecated http auth method
         if (!empty(self::$auth['user'])) {
             curl_setopt_array(self::$handle, array(
                 CURLOPT_HTTPAUTH    => self::$auth['method'],
