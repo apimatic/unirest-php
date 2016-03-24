@@ -6,8 +6,18 @@
   "homepage": "https://github.com/apimatic/unirest-php",
   "license": "MIT",
   "authors": [
-	"Mashape <opensource@mashape.com> (https://www.mashape.com)",
-	"APIMATIC <zeeshan@apimatic.io> (https://apimatic.io)"
+    {
+      "name": "Mashape",
+      "email": "opensource@mashape.com",
+      "homepage": "https://www.mashape.com",
+      "role": "Developer"
+    },
+    {
+      "name": "APIMATIC",
+      "email": "opensource@apimatic.io",
+      "homepage": "https://apimatic.io",
+      "role": "Developer"
+    }
   ],
   "require": {
     "php": ">=5.4.0",
