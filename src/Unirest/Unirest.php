@@ -364,7 +364,6 @@ class Unirest
         curl_setopt_array(self::$handle, array(
             CURLOPT_URL => self::encodeUrl($request->url),
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_HTTPHEADER => self::getFormattedHeaders($request->headers),
             CURLOPT_HEADER => true,
@@ -372,6 +371,10 @@ class Unirest
             // If an empty string, '', is set, a header containing all supported encoding types is sent
             CURLOPT_ENCODING => ''
         ));
+
+	if (strtolower(ini_get('safe_mode')) == 'off' && ini_get('open_basedir') == '') {
+            curl_setopt(self::$handle, CURLOPT_FOLLOWLOCATION, true);
+	}
 
         if (self::$socketTimeout !== null) {
             curl_setopt(self::$handle, CURLOPT_TIMEOUT, self::$socketTimeout);
