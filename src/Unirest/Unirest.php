@@ -372,9 +372,9 @@ class Unirest
             CURLOPT_ENCODING => ''
         ));
 
-	if (strtolower(ini_get('safe_mode')) == 'off' && ini_get('open_basedir') == '') {
-            curl_setopt(self::$handle, CURLOPT_FOLLOWLOCATION, true);
-	}
+    	if (strtolower(ini_get('safe_mode')) == 'off' && ini_get('open_basedir') == '') {
+                curl_setopt(self::$handle, CURLOPT_FOLLOWLOCATION, true);
+    	}
 
         if (self::$socketTimeout !== null) {
             curl_setopt(self::$handle, CURLOPT_TIMEOUT, self::$socketTimeout);
