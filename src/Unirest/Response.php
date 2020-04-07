@@ -25,10 +25,12 @@ class Response
         // make sure raw_body is the first argument
         array_unshift($json_args, $raw_body);
 
-        $json = call_user_func_array('json_decode', $json_args);
+        if (function_exists('json_decode')) {
+            $json = call_user_func_array('json_decode', $json_args);
 
-        if (json_last_error() === JSON_ERROR_NONE) {
-            $this->body = $json;
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->body = $json;
+            }
         }
     }
 
@@ -37,6 +39,8 @@ class Response
      *
      * thanks to ricardovermeltfoort@gmail.com
      * http://php.net/manual/en/function.http-parse-headers.php#112986
+     * @param string $raw_headers raw headers
+     * @return array
      */
     private function parseHeaders($raw_headers)
     {
