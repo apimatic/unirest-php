@@ -1,17 +1,13 @@
-# Unirest for PHP [![Build Status][travis-image]][travis-url] [![version][packagist-version]][packagist-url]
+# Unirest for PHP
 
+[![version][packagist-version]][packagist-url]
 [![Downloads][packagist-downloads]][packagist-url]
-[![Code Climate][codeclimate-quality]][codeclimate-url]
-[![Coverage Status][codeclimate-coverage]][codeclimate-url]
-[![Dependencies][versioneye-image]][versioneye-url]
-[![Gitter][gitter-image]][gitter-url]
+[![Build Status][travis-image]][travis-url]
 [![License][packagist-license]][license-url]
 
-![][unirest-logo]
+Unirest is a set of lightweight HTTP libraries available in [multiple languages](http://unirest.io).
 
-
-[Unirest](http://unirest.io) is a set of lightweight HTTP libraries available in multiple languages, built and maintained by [Mashape](https://github.com/Mashape), who also maintain the open-source API Gateway [Kong](https://github.com/Mashape/kong). 
-
+This fork is maintained by [APIMatic](https://www.apimatic.io) for its Code Generator as a Service.
 
 ## Features
 
@@ -25,19 +21,17 @@
 
 ## Requirements
 
-- [cURL](http://php.net/manual/en/book.curl.php)
-- PHP 5.4+
+- PHP 5.6+
+- PHP Curl extension
 
 ## Installation
 
-### Using [Composer](https://getcomposer.org)
-
-To install unirest-php with Composer, just add the following to your `composer.json` file:
+To install `apimatic/unirest-php` with Composer, just add the following to your `composer.json` file:
 
 ```json
 {
-    "require-dev": {
-        "mashape/unirest-php": "3.*"
+    "require": {
+        "apimatic/unirest-php": "^2.0"
     }
 }
 ```
@@ -45,35 +39,7 @@ To install unirest-php with Composer, just add the following to your `composer.j
 or by running the following command:
 
 ```shell
-composer require mashape/unirest-php
-```
-
-This will get you the latest version of the reporter and install it. If you do want the master, untagged, version you may use the command below:
-
-```shell
-composer require mashape/php-test-reporter dev-master
-```
-
-Composer installs autoloader at `./vendor/autoloader.php`. to include the library in your script, add:
-
-```php
-require_once 'vendor/autoload.php';
-```
-
-If you use Symfony2, autoloader has to be detected automatically.
-
-*You can see this library on [Packagist](https://packagist.org/packages/mashape/unirest-php).*
-
-### Install from source
-
-Download the PHP library from Github, then include `Unirest.php` in your script:
-
-```shell
-git clone git@github.com:Mashape/unirest-php.git 
-```
-
-```php
-require_once '/path/to/unirest-php/src/Unirest.php';
+composer require apimatic/unirest-php
 ```
 
 ## Usage
@@ -413,27 +379,14 @@ Unirest\Request::getCurlHandle()
 
 Made with &#9829; from the [Mashape][mashape-url] team
 
-[unirest-logo]: http://cl.ly/image/2P373Y090s2O/Image%202015-10-12%20at%209.48.06%20PM.png
-
-
 [mashape-url]: https://www.mashape.com/
 
-[license-url]: https://github.com/Mashape/unirest-php/blob/master/LICENSE
+[license-url]: https://github.com/apimatic/unirest-php/blob/master/LICENSE
 
-[gitter-url]: https://gitter.im/Mashape/unirest-php
-[gitter-image]: https://img.shields.io/badge/Gitter-Join%20Chat-blue.svg?style=flat
+[travis-url]: https://travis-ci.org/apimatic/unirest-php
+[travis-image]: https://img.shields.io/travis/apimatic/unirest-php.svg?style=flat
 
-[travis-url]: https://travis-ci.org/Mashape/unirest-php
-[travis-image]: https://img.shields.io/travis/Mashape/unirest-php.svg?style=flat
-
-[packagist-url]: https://packagist.org/packages/Mashape/unirest-php
-[packagist-license]: https://img.shields.io/packagist/l/Mashape/unirest-php.svg?style=flat
-[packagist-version]: https://img.shields.io/packagist/v/Mashape/unirest-php.svg?style=flat
-[packagist-downloads]: https://img.shields.io/packagist/dm/Mashape/unirest-php.svg?style=flat
-
-[codeclimate-url]: https://codeclimate.com/github/Mashape/unirest-php
-[codeclimate-quality]: https://img.shields.io/codeclimate/github/Mashape/unirest-php.svg?style=flat
-[codeclimate-coverage]: https://img.shields.io/codeclimate/coverage/github/Mashape/unirest-php.svg?style=flat
-
-[versioneye-url]: https://www.versioneye.com/user/projects/54b82450050646ca5c0001f3
-[versioneye-image]: https://img.shields.io/versioneye/d/php/mashape:unirest-php.svg?style=flat
+[packagist-url]: https://packagist.org/packages/apimatic/unirest-php
+[packagist-license]: https://img.shields.io/packagist/l/apimatic/unirest-php.svg?style=flat
+[packagist-version]: https://img.shields.io/packagist/v/apimatic/unirest-php.svg?style=flat
+[packagist-downloads]: https://img.shields.io/packagist/dm/apimatic/unirest-php.svg?style=flat
