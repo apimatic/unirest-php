@@ -7,7 +7,7 @@ use Unirest\Response as Response;
 
 require __DIR__ . '/../../src/Unirest.php';
 
-class UnirestResponseTest extends \PHPUnit_Framework_TestCase
+class UnirestResponseTest extends \PHPUnit\Framework\TestCase
 {
     public function testJSONAssociativeArrays()
     {

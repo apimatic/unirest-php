@@ -6,7 +6,7 @@ use Unirest\Request as Request;
 
 require __DIR__ . '/../../src/Unirest.php';
 
-class UnirestRequestTest extends \PHPUnit_Framework_TestCase
+class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 {
     // Generic
     public function testCurlOpts()
