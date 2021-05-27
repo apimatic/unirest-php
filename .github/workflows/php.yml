@@ -1,0 +1,38 @@
+name: Tests
+on:
+  push:
+    branches: [ v2-master ]
+  pull_request:
+    branches: [ v2-master ]
+jobs:
+  test:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    if: "! contains(toJSON(github.event.head_commit.message), 'skip ci')"
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        experimental: [false]
+        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+        include:
+          - php: '8.0'
+            phpunit: 8
+            experimental: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Cache Composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.composer/cache/files
+          key: php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: php-${{ matrix.php }}-composer-
+      - name: Install dependencies
+        run: composer install --prefer-source
+      - name: Run tests
+        run: ./vendor/bin/phpunit --coverage-text
