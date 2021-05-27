@@ -2,7 +2,7 @@
 
 [![version][packagist-version]][packagist-url]
 [![Downloads][packagist-downloads]][packagist-url]
-[![Build Status][travis-image]][travis-url]
+[![Tests](https://github.com/apimatic/unirest-php/actions/workflows/php.yml/badge.svg)](https://github.com/apimatic/unirest-php/actions/workflows/php.yml)
 [![License][packagist-license]][license-url]
 
 Unirest is a set of lightweight HTTP libraries available in [multiple languages](http://unirest.io).
