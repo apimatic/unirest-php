@@ -3,6 +3,7 @@
 namespace Unirest\Request\Test;
 
 use Unirest\Request as Request;
+use Unirest\Exception as Exception;
 
 require __DIR__ . '/../../src/Unirest.php';
 
@@ -20,16 +21,17 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
         Request::clearCurlOpts();
     }
 
-    /**
-     * @expectedException \Unirest\Exception
-     */
     public function testTimeoutFail()
     {
         Request::timeout(1);
-
-        Request::get('http://mockbin.com/delay/1000');
-
+        $message = "Timeout exception not thrown";
+        try {
+            Request::get('http://mockbin.com/delay/2000');
+        } catch (Exception $e) {
+            $message = substr($e->getMessage(), 0, 19);
+        }
         Request::timeout(null); // Cleaning timeout for the other tests
+        $this->assertEquals('Operation timed out', $message);
     }
 
     public function testDefaultHeaders()
