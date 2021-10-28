@@ -121,7 +121,7 @@ class Request
     }
 
     /**
-     * Set a new default header to send on every request
+     * Set a new default curl option to send on every request
      *
      * @param string $name header name
      * @param string $value header value
@@ -133,7 +133,7 @@ class Request
     }
 
     /**
-     * Clear all the default headers
+     * Clear all the default curl options
      */
     public static function clearCurlOpts()
     {
