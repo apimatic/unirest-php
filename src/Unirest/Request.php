@@ -11,6 +11,15 @@ class Request
     private static $handle = null;
     private static $jsonOpts = array();
     private static $socketTimeout = null;
+    private static $enableRetries = false;            // should we enable retries feature
+    private static $retryCount = 0;                   // current retry count
+    private static $maxNumberOfRetries = 0;           // total number of allowed retries
+    private static $retryOnTimeout = false;           // Should we retry on timeout?
+    private static $retryInterval = 1.0;              // Initial retry interval in seconds, to be increased by backoffFactor
+    private static $maxRetryInterval = 1.0;           // maximum retry wait time
+    private static $backoffFactor = 2;                // backoff factor to be used to increase retry interval
+    private static $httpStatusCodesToRetry = array(); // Http status codes to retry against
+    private static $httpMethodsToRetry = array();     // Http methods to retry against
     private static $verifyPeer = true;
     private static $verifyHost = true;
 
@@ -76,6 +85,94 @@ class Request
     public static function timeout($seconds)
     {
         return self::$socketTimeout = $seconds;
+    }
+
+    /**
+     * Should we enable retries feature
+     *
+     * @param bool $enableRetries
+     * @return bool
+     */
+    public static function enableRetries($enableRetries)
+    {
+        return self::$enableRetries = $enableRetries;
+    }
+
+    /**
+     * Total number of allowed retries
+     *
+     * @param integer $maxNumberOfRetries
+     * @return integer
+     */
+    public static function maxNumberOfRetries($maxNumberOfRetries)
+    {
+        return self::$maxNumberOfRetries = $maxNumberOfRetries;
+    }
+
+    /**
+     * Should we retry on timeout
+     *
+     * @param bool $retryOnTimeout
+     * @return bool
+     */
+    public static function retryOnTimeout($retryOnTimeout)
+    {
+        return self::$retryOnTimeout = $retryOnTimeout;
+    }
+
+    /**
+     * Initial retry interval in seconds, to be increased by backoffFactor
+     *
+     * @param float $retryInterval
+     * @return float
+     */
+    public static function retryInterval($retryInterval)
+    {
+        return self::$retryInterval = $retryInterval;
+    }
+
+    /**
+     * Maximum retry wait time
+     *
+     * @param float $maxRetryInterval
+     * @return float
+     */
+    public static function maxRetryInterval($maxRetryInterval)
+    {
+        return self::$maxRetryInterval = $maxRetryInterval;
+    }
+
+    /**
+     * Backoff factor to be used to increase retry interval
+     *
+     * @param integer $backoffFactor
+     * @return integer
+     */
+    public static function backoffFactor($backoffFactor)
+    {
+        return self::$backoffFactor = $backoffFactor;
+    }
+
+    /**
+     * Http status codes to retry against
+     *
+     * @param integer[] $httpStatusCodesToRetry
+     * @return integer[]
+     */
+    public static function httpStatusCodesToRetry($httpStatusCodesToRetry)
+    {
+        return self::$httpStatusCodesToRetry = $httpStatusCodesToRetry;
+    }
+
+    /**
+     * Http methods to retry against
+     *
+     * @param string[] $httpMethodsToRetry
+     * @return string[]
+     */
+    public static function httpMethodsToRetry($httpMethodsToRetry)
+    {
+        return self::$httpMethodsToRetry = $httpMethodsToRetry;
     }
 
     /**
@@ -471,10 +568,29 @@ class Request
             ));
         }
 
-        $response   = curl_exec(self::$handle);
-        $error      = curl_error(self::$handle);
-        $info       = self::getInfo();
+        do {
+            // If it is not the first try
+            if (self::$retryCount > 0) {
+                // calculate wait time with exponential backoff and wait
+                $waitTime = self::$retryInterval * pow(self::$backoffFactor, self::$retryCount);
+                sleep($waitTime > self::$maxRetryInterval ? self::$maxRetryInterval : $waitTime);
+            }
 
+            $response = curl_exec(self::$handle);
+            $error = curl_error(self::$handle);
+            $info = self::getInfo();
+
+            $retry = self::$enableRetries;
+            $retry = $retry && in_array($method, self::$httpMethodsToRetry);
+            if ($error) {
+                $retry = $retry && self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
+            } else {
+                $retry = $retry && in_array($info['http_code'], self::$httpStatusCodesToRetry);
+            }
+
+        } while ($retry && (self::$retryCount++ < self::$maxNumberOfRetries));
+
+        self::$retryCount = 0;
         if ($error) {
             throw new Exception($error);
         }
