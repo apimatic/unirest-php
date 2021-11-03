@@ -16,7 +16,7 @@ class Request
     private static $maxNumberOfRetries = 0;           // total number of allowed retries
     private static $retryOnTimeout = false;           // Should we retry on timeout?
     private static $retryInterval = 1.0;              // Initial retry interval in seconds, to be increased by backoffFactor
-    private static $maxRetryInterval = 1.0;           // maximum retry wait time
+    private static $maxRetryInterval = 1;             // maximum retry wait time
     private static $backoffFactor = 2.0;              // backoff factor to be used to increase retry interval
     private static $httpStatusCodesToRetry = array(); // Http status codes to retry against
     private static $httpMethodsToRetry = array();     // Http methods to retry against
@@ -134,8 +134,8 @@ class Request
     /**
      * Maximum retry wait time
      *
-     * @param float $maxRetryInterval
-     * @return float
+     * @param integer $maxRetryInterval
+     * @return integer
      */
     public static function maxRetryInterval($maxRetryInterval)
     {
