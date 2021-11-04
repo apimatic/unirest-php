@@ -110,7 +110,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testGzip()
     {
-        $response = Request::get('http://mockbin.com/gzip/request');
+        $response = Request::post('http://mockbin.com/gzip');
 
         $this->assertEquals('gzip', $response->headers['Content-Encoding']);
     }
