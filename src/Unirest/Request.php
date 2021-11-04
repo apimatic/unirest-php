@@ -601,7 +601,7 @@ class Request
                 // noise between 0 and 0.1 secs upto 6 decimal places
                 $noise    = rand(0, 100000) / 1000000;
                 // calculate wait time with exponential backoff and noise in seconds
-                $waitTime = (self::$retryInterval * pow(self::$backoffFactor, $retryCount - 1)) + $noise;
+                $waitTime = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
                 // select minimum between allowed_wait_time and maximum of waitTime and retry_after
                 $waitTime = min($allowed_wait_time, max($waitTime, $retry_after));
                 $retry    = $waitTime != 0 && $retryCount < self::$maxNumberOfRetries;
