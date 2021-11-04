@@ -18,7 +18,7 @@ class Response
     public function __construct($code, $raw_body, $headers, $json_args = array())
     {
         $this->code     = $code;
-        $this->headers  = $this->parseHeaders($headers);
+        $this->headers  = self::parseHeaders($headers);
         $this->raw_body = $raw_body;
         $this->body     = $raw_body;
 
@@ -42,7 +42,7 @@ class Response
      * @param string $raw_headers raw headers
      * @return array
      */
-    private function parseHeaders($raw_headers)
+    public static function parseHeaders($raw_headers)
     {
         if (function_exists('http_parse_headers')) {
             return http_parse_headers($raw_headers);
