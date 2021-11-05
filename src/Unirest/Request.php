@@ -571,7 +571,6 @@ class Request
 
         $retryCount        = 0;                        // current retry count
         $waitTime          = 0.0;                      // wait time in secs before current api call
-        $retry_after       = 0;                        // number of secs in retry_after header of prev response
         $allowed_wait_time = self::$maxRetryInterval;  // remaining allowed wait time in seconds
         do {
             // If Retrying i.e. retryCount >= 1
@@ -586,30 +585,12 @@ class Request
             $error     = curl_error(self::$handle);
             $info      = self::getInfo();
 
-            // Should retry or not
-            $retry     = self::$enableRetries;
-            if ($retry) {
-                // check if http-method exists in httpMethodsToRetry
-                $retry     = in_array($method, self::$httpMethodsToRetry);
-                if ($error) {
-                    $retry = $retry && self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
-                } else {
-                    // Successful apiCall with some status code or with Retry-After header
-                    $retry_after_header = self::getResponseHeader($response, $info, 'Retry-After');
-                    $retry_after        = self::getRetryAfterInSeconds($retry_after_header);
-                    $retry              = $retry && (isset($retry_after_header) || in_array($info['http_code'], self::$httpStatusCodesToRetry));
-                }
-                // noise between 0 and 0.1 secs upto 6 decimal places
-                $noise     = rand(0, 100000) / 1000000;
-                // calculate wait time with exponential backoff and noise in seconds
-                $waitTime  = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
-                // select minimum between allowed_wait_time and maximum of waitTime and retry_after
-                $waitTime  = min($allowed_wait_time, max($waitTime, $retry_after));
-                // do not retry if waitTime gets below or equal to 0 or if max number of retries are already attempted
-                $retry     = $retry && $waitTime > 0 && $retryCount < self::$maxNumberOfRetries;
-                $retryCount++; // increment retryCount for next apiCall
+            if (self::$enableRetries) {
+                // If retries are enabled, calculate wait time for retry, and should not retry when wait time gets 0
+                $waitTime = self::getRetryWaitTime($method, $response, $info, $error, $allowed_wait_time, $retryCount);
+                $retryCount++;
             }
-        } while ($retry);
+        } while ($waitTime > 0.0);
 
         if ($error) {
             throw new Exception($error);
@@ -622,6 +603,44 @@ class Request
         $httpCode    = $info['http_code'];
 
         return new Response($httpCode, $body, $header, self::$jsonOpts);
+    }
+
+    /**
+     * Generate calculated wait time, and 0.0 if api should not be retried
+     *
+     * @param $method             string|Method  HttpMethod of apiCall
+     * @param $response           string|bool    Response returned by server
+     * @param $info               mixed          Response info
+     * @param $error              string         Error returned by server
+     * @param $allowed_wait_time  int            Remaining allowed wait time
+     * @param $retryCount         int            Attempt number
+     * @return float  Wait time before sending the next apiCall
+     */
+    public static function getRetryWaitTime($method, $response, $info, $error, $allowed_wait_time, $retryCount)
+    {
+        $waitTime = 0.0;
+        // if http-method exists in httpMethodsToRetry
+        if (in_array($method, self::$httpMethodsToRetry)) {
+            $retry_after = 0;
+            if ($error) {
+                $retry   = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
+            } else {
+                // Successful apiCall with some status code or with Retry-After header
+                $retry_after_header = self::getResponseHeader($response, $info, 'Retry-After');
+                $retry_after        = self::getRetryAfterInSeconds($retry_after_header);
+                $retry              = isset($retry_after_header) || in_array($info['http_code'], self::$httpStatusCodesToRetry);
+            }
+            // Calculate wait time only if max number of retries are not already attempted
+            if ($retry && $retryCount < self::$maxNumberOfRetries) {
+                // noise between 0 and 0.1 secs upto 6 decimal places
+                $noise    = rand(0, 100000) / 1000000;
+                // calculate wait time with exponential backoff and noise in seconds
+                $waitTime = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
+                // select minimum between allowed_wait_time and maximum of waitTime and retry_after
+                $waitTime = floatval(min($allowed_wait_time, max($waitTime, $retry_after)));
+            }
+        }
+        return $waitTime;
     }
 
     public static function getRetryAfterInSeconds($retry_after)
