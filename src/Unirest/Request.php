@@ -618,7 +618,7 @@ class Request
      */
     public static function getRetryWaitTime($method, $response, $info, $error, $allowed_wait_time, $retryCount)
     {
-        $waitTime = 0.0;
+        $retryWaitTime = 0.0;
         // if http-method exists in httpMethodsToRetry
         if (in_array($method, self::$httpMethodsToRetry)) {
             $retry_after = 0;
@@ -636,11 +636,15 @@ class Request
                 $noise    = rand(0, 100000) / 1000000;
                 // calculate wait time with exponential backoff and noise in seconds
                 $waitTime = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
-                // select minimum between allowed_wait_time and maximum of waitTime and retry_after
-                $waitTime = floatval(min($allowed_wait_time, max($waitTime, $retry_after)));
+                // select maximum of waitTime and retry_after
+                $waitTime = floatval(max($waitTime, $retry_after));
+                if ($waitTime <= $allowed_wait_time) {
+                    // set retry wait time for next api call, only if its under allowed time
+                    $retryWaitTime = $waitTime;
+                }
             }
         }
-        return $waitTime;
+        return $retryWaitTime;
     }
 
     public static function getRetryAfterInSeconds($retry_after)
