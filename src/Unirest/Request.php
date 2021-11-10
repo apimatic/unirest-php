@@ -17,7 +17,7 @@ class Request
     private static $maxNumberOfRetries = 3;           // total number of allowed retries
     private static $retryOnTimeout = false;           // Should we retry on timeout?
     private static $retryInterval = 1.0;              // Initial retry interval in seconds, to be increased by backoffFactor
-    private static $maxRetryInterval = 120;           // maximum retry wait time (commutative)
+    private static $maximumRetryWaitTime = 120;           // maximum retry wait time (commutative)
     private static $backoffFactor = 2.0;              // backoff factor to be used to increase retry interval
     private static $httpStatusCodesToRetry = array(); // Http status codes to retry against
     private static $httpMethodsToRetry = array();     // Http methods to retry against
@@ -135,12 +135,12 @@ class Request
     /**
      * Maximum retry wait time
      *
-     * @param integer $maxRetryInterval
+     * @param integer $maximumRetryWaitTime
      * @return integer
      */
-    public static function maxRetryInterval($maxRetryInterval)
+    public static function maximumRetryWaitTime($maximumRetryWaitTime)
     {
-        return self::$maxRetryInterval = $maxRetryInterval;
+        return self::$maximumRetryWaitTime = $maximumRetryWaitTime;
     }
 
     /**
@@ -569,9 +569,9 @@ class Request
             ));
         }
 
-        $retryCount        = 0;                        // current retry count
-        $waitTime          = 0.0;                      // wait time in secs before current api call
-        $allowed_wait_time = self::$maxRetryInterval;  // remaining allowed wait time in seconds
+        $retryCount        = 0;                           // current retry count
+        $waitTime          = 0.0;                         // wait time in secs before current api call
+        $allowed_wait_time = self::$maximumRetryWaitTime; // remaining allowed wait time in seconds
         do {
             // If Retrying i.e. retryCount >= 1
             if ($retryCount > 0) {
