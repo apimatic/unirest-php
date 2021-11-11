@@ -642,7 +642,9 @@ class Request
                 $retry   = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
             } else {
                 // Successful apiCall with some status code or with Retry-After header
-                $retry_after_val = array_change_key_case($headers)['retry-after'];
+                $headers_lower_keys = array_change_key_case($headers);
+                $retry_after_val = key_exists('retry-after', $headers_lower_keys) ?
+                    $headers_lower_keys['retry-after'] : null;
                 $retry_after = self::getRetryAfterInSeconds($retry_after_val);
                 $retry       = isset($retry_after_val) || in_array($httpCode, self::$httpStatusCodesToRetry);
             }
