@@ -663,6 +663,13 @@ class Request
         return $retryWaitTime;
     }
 
+    /**
+     * Returns the number of seconds by extracting them from $retry-after header
+     *
+     * @param $retry_after mixed could be some numeric value in seconds, or it could be RFC1123
+     *                     formatted datetime string
+     * @return int Number of seconds specified by retry-after param
+     */
     private static function getRetryAfterInSeconds($retry_after)
     {
         if (isset($retry_after)) {
