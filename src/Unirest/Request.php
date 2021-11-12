@@ -2,8 +2,6 @@
 
 namespace Unirest;
 
-use function PHPUnit\Framework\isFalse;
-
 class Request
 {
     private static $cookie = null;
