@@ -11,6 +11,14 @@ class Request
     private static $handle = null;
     private static $jsonOpts = array();
     private static $socketTimeout = null;
+    private static $enableRetries = false;       // should we enable retries feature
+    private static $maxNumberOfRetries = 3;      // total number of allowed retries
+    private static $retryOnTimeout = false;      // Should we retry on timeout?
+    private static $retryInterval = 1.0;         // Initial retry interval in seconds, to be increased by backoffFactor
+    private static $maximumRetryWaitTime = 120;  // maximum retry wait time (commutative)
+    private static $backoffFactor = 2.0;         // backoff factor to be used to increase retry interval
+    private static $httpStatusCodesToRetry = array(408, 413, 429, 500, 502, 503, 504, 521, 522, 524);
+    private static $httpMethodsToRetry = array("GET", "PUT");
     private static $verifyPeer = true;
     private static $verifyHost = true;
 
@@ -76,6 +84,94 @@ class Request
     public static function timeout($seconds)
     {
         return self::$socketTimeout = $seconds;
+    }
+
+    /**
+     * Should we enable retries feature
+     *
+     * @param bool $enableRetries
+     * @return bool
+     */
+    public static function enableRetries($enableRetries)
+    {
+        return self::$enableRetries = $enableRetries;
+    }
+
+    /**
+     * Total number of allowed retries
+     *
+     * @param integer $maxNumberOfRetries
+     * @return integer
+     */
+    public static function maxNumberOfRetries($maxNumberOfRetries)
+    {
+        return self::$maxNumberOfRetries = $maxNumberOfRetries;
+    }
+
+    /**
+     * Should we retry on timeout
+     *
+     * @param bool $retryOnTimeout
+     * @return bool
+     */
+    public static function retryOnTimeout($retryOnTimeout)
+    {
+        return self::$retryOnTimeout = $retryOnTimeout;
+    }
+
+    /**
+     * Initial retry interval in seconds, to be increased by backoffFactor
+     *
+     * @param float $retryInterval
+     * @return float
+     */
+    public static function retryInterval($retryInterval)
+    {
+        return self::$retryInterval = $retryInterval;
+    }
+
+    /**
+     * Maximum retry wait time
+     *
+     * @param integer $maximumRetryWaitTime
+     * @return integer
+     */
+    public static function maximumRetryWaitTime($maximumRetryWaitTime)
+    {
+        return self::$maximumRetryWaitTime = $maximumRetryWaitTime;
+    }
+
+    /**
+     * Backoff factor to be used to increase retry interval
+     *
+     * @param float $backoffFactor
+     * @return float
+     */
+    public static function backoffFactor($backoffFactor)
+    {
+        return self::$backoffFactor = $backoffFactor;
+    }
+
+    /**
+     * Http status codes to retry against
+     *
+     * @param integer[] $httpStatusCodesToRetry
+     * @return integer[]
+     */
+    public static function httpStatusCodesToRetry($httpStatusCodesToRetry)
+    {
+        return self::$httpStatusCodesToRetry = $httpStatusCodesToRetry;
+    }
+
+    /**
+     * Http methods to retry against
+     *
+     * @param string[] $httpMethodsToRetry
+     * @return string[]
+     */
+    public static function httpMethodsToRetry($httpMethodsToRetry)
+    {
+        return self::$httpMethodsToRetry = $httpMethodsToRetry;
     }
 
     /**
@@ -471,21 +567,164 @@ class Request
             ));
         }
 
-        $response   = curl_exec(self::$handle);
-        $error      = curl_error(self::$handle);
-        $info       = self::getInfo();
+        $retryCount        = 0;                           // current retry count
+        $waitTime          = 0.0;                         // wait time in secs before current api call
+        $allowed_wait_time = self::$maximumRetryWaitTime; // remaining allowed wait time in seconds
+        $httpCode          = null;
+        $headers           = array();
+        do {
+            // If Retrying i.e. retryCount >= 1
+            if ($retryCount > 0) {
+                self::sleep($waitTime);
+                // calculate remaining allowed wait Time
+                $allowed_wait_time -= $waitTime;
+            }
+
+            // Execution of api call
+            $response  = curl_exec(self::$handle);
+            $error     = curl_error(self::$handle);
+            $info      = self::getInfo();
+            if (!$error) {
+                $header_size = $info['header_size'];
+                $httpCode    = $info['http_code'];
+                $headers     = self::parseHeaders(substr($response, 0, $header_size));
+            }
+
+            if (self::$enableRetries) {
+                // If retries are enabled, calculate wait time for retry, and should not retry when wait time gets 0
+                $waitTime = self::getRetryWaitTime($method, $httpCode, $headers, $error, $allowed_wait_time, $retryCount);
+                $retryCount++;
+            }
+        } while ($waitTime > 0.0);
 
         if ($error) {
             throw new Exception($error);
         }
+        // get response body
+        $body = substr($response, $header_size);
 
-        // Split the full response in its headers and body
-        $header_size = $info['header_size'];
-        $header      = substr($response, 0, $header_size);
-        $body        = substr($response, $header_size);
-        $httpCode    = $info['http_code'];
+        return new Response($httpCode, $body, $headers, self::$jsonOpts);
+    }
 
-        return new Response($httpCode, $body, $header, self::$jsonOpts);
+    /**
+     * Halts program flow for given number of seconds, and microseconds
+     *
+     * @param $seconds float seconds with upto 6 decimal places, here decimal part will be converted into microseconds
+     */
+    private static function sleep($seconds) {
+        $secs = (int) $seconds;
+        // the fraction part of the $seconds will always be less than 1 sec
+        $microSecs  = ($seconds - $secs) * 1000000;
+        sleep($secs);
+        usleep($microSecs);
+    }
+
+    /**
+     * Generate calculated wait time, and 0.0 if api should not be retried
+     *
+     * @param $method             string|Method  HttpMethod of apiCall
+     * @param $httpCode           int            Http status code in response
+     * @param $headers            array          Response headers
+     * @param $error              string         Error returned by server
+     * @param $allowed_wait_time  int            Remaining allowed wait time
+     * @param $retryCount         int            Attempt number
+     * @return float  Wait time before sending the next apiCall
+     */
+    private static function getRetryWaitTime($method, $httpCode, $headers, $error, $allowed_wait_time, $retryCount)
+    {
+        $retryWaitTime  = 0.0;
+        // if http-method exists in httpMethodsToRetry
+        if (in_array($method, self::$httpMethodsToRetry)) {
+            $retry_after = 0;
+            if ($error) {
+                $retry   = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
+            } else {
+                // Successful apiCall with some status code or with Retry-After header
+                $headers_lower_keys = array_change_key_case($headers);
+                $retry_after_val = key_exists('retry-after', $headers_lower_keys) ?
+                    $headers_lower_keys['retry-after'] : null;
+                $retry_after = self::getRetryAfterInSeconds($retry_after_val);
+                $retry       = isset($retry_after_val) || in_array($httpCode, self::$httpStatusCodesToRetry);
+            }
+            // Calculate wait time only if max number of retries are not already attempted
+            if ($retry && $retryCount < self::$maxNumberOfRetries) {
+                // noise between 0 and 0.1 secs upto 6 decimal places
+                $noise       = rand(0, 100000) / 1000000;
+                // calculate wait time with exponential backoff and noise in seconds
+                $waitTime    = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
+                // select maximum of waitTime and retry_after
+                $waitTime    = floatval(max($waitTime, $retry_after));
+                if ($waitTime <= $allowed_wait_time) {
+                    // set retry wait time for next api call, only if its under allowed time
+                    $retryWaitTime = $waitTime;
+                }
+            }
+        }
+        return $retryWaitTime;
+    }
+
+    /**
+     * Returns the number of seconds by extracting them from $retry-after header
+     *
+     * @param $retry_after mixed could be some numeric value in seconds, or it could be RFC1123
+     *                     formatted datetime string
+     * @return int Number of seconds specified by retry-after param
+     */
+    private static function getRetryAfterInSeconds($retry_after)
+    {
+        if (isset($retry_after)) {
+            if (is_numeric($retry_after)) {
+                return (int)$retry_after; // if value is already in seconds
+            } else {
+                // if value is a date time string in format RFC1123
+                $retry_after_date = \DateTime::createFromFormat('D, d M Y H:i:s O', $retry_after);
+                // retry_after_date could either be undefined, or false, or a DateTime object (if valid format string)
+                return $retry_after_date == false ? 0 : $retry_after_date->getTimestamp() - time();
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * if PECL_HTTP is not available use a fall back function
+     *
+     * thanks to ricardovermeltfoort@gmail.com
+     * http://php.net/manual/en/function.http-parse-headers.php#112986
+     * @param string $raw_headers raw headers
+     * @return array
+     */
+    private static function parseHeaders($raw_headers)
+    {
+        if (function_exists('http_parse_headers')) {
+            return http_parse_headers($raw_headers);
+        } else {
+            $key = '';
+            $headers = array();
+
+            foreach (explode("\n", $raw_headers) as $i => $h) {
+                $h = explode(':', $h, 2);
+
+                if (isset($h[1])) {
+                    if (!isset($headers[$h[0]])) {
+                        $headers[$h[0]] = trim($h[1]);
+                    } elseif (is_array($headers[$h[0]])) {
+                        $headers[$h[0]] = array_merge($headers[$h[0]], array(trim($h[1])));
+                    } else {
+                        $headers[$h[0]] = array_merge(array($headers[$h[0]]), array(trim($h[1])));
+                    }
+
+                    $key = $h[0];
+                } else {
+                    if (substr($h[0], 0, 1) == "\t") {
+                        $headers[$key] .= "\r\n\t".trim($h[0]);
+                    } elseif (!$key) {
+                        $headers[0] = trim($h[0]);
+                    }
+                }
+            }
+
+            return $headers;
+        }
     }
 
     public static function getInfo($opt = false)
