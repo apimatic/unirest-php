@@ -19,6 +19,7 @@ class Request
     private static $backoffFactor = 2.0;         // backoff factor to be used to increase retry interval
     private static $httpStatusCodesToRetry = array(408, 413, 429, 500, 502, 503, 504, 521, 522, 524);
     private static $httpMethodsToRetry = array("GET", "PUT");
+    private static $retryForAllHttpMethods = false; // should we retry without checking httpMethodsToRetry list?
     private static $verifyPeer = true;
     private static $verifyHost = true;
 
@@ -172,6 +173,14 @@ class Request
     public static function httpMethodsToRetry($httpMethodsToRetry)
     {
         return self::$httpMethodsToRetry = $httpMethodsToRetry;
+    }
+
+    /**
+     * Retry next API without checking httpMethodsToRetry list
+     */
+    public static function retryForAllHttpMethods()
+    {
+        self::$retryForAllHttpMethods = true;
     }
 
     /**
@@ -597,6 +606,8 @@ class Request
             }
         } while ($waitTime > 0.0);
 
+        self::$retryForAllHttpMethods = false;
+
         if ($error) {
             throw new Exception($error);
         }
@@ -634,7 +645,7 @@ class Request
     {
         $retryWaitTime  = 0.0;
         // if http-method exists in httpMethodsToRetry
-        if (in_array($method, self::$httpMethodsToRetry)) {
+        if (self::$retryForAllHttpMethods || in_array($method, self::$httpMethodsToRetry)) {
             $retry_after = 0;
             if ($error) {
                 $retry   = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
