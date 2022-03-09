@@ -19,9 +19,18 @@ class Request
     private static $backoffFactor = 2.0;         // backoff factor to be used to increase retry interval
     private static $httpStatusCodesToRetry = array(408, 413, 429, 500, 502, 503, 504, 521, 522, 524);
     private static $httpMethodsToRetry = array("GET", "PUT");
-    private static $retryForAllHttpMethods = false; // should we retry without checking httpMethodsToRetry list?
     private static $verifyPeer = true;
     private static $verifyHost = true;
+
+    /**
+     * Should enable or disable retries for current request?
+     * True:  Retry current request ignoring httpMethods whitelist.
+     * False: Do not retry current request.
+     * Null:  Use global httpMethods whitelist to determine if it needs retrying.
+     *
+     * @var bool|null
+     */
+    private static $retryCurrentRequest = null;
 
     private static $auth = array (
         'user' => '',
@@ -176,11 +185,14 @@ class Request
     }
 
     /**
-     * Retry requests without checking httpMethodsToRetry list
+     * Enable or disable retries for current request, ignoring httpMethods whitelist.
+     *
+     * @param bool $retryCurrentRequest
+     * @return bool
      */
-    public static function retryForAllHttpMethods()
+    public static function retryCurrentRequest($retryCurrentRequest)
     {
-        self::$retryForAllHttpMethods = true;
+        return self::$retryCurrentRequest = $retryCurrentRequest;
     }
 
     /**
@@ -599,14 +611,16 @@ class Request
                 $headers     = self::parseHeaders(substr($response, 0, $header_size));
             }
 
-            if (self::$enableRetries) {
-                // If retries are enabled, calculate wait time for retry, and should not retry when wait time gets 0
+            // if retries are enabled at global and request level
+            if (self::$enableRetries && self::$retryCurrentRequest != false) {
+                // calculate wait time for retry, and should not retry when wait time becomes 0
                 $waitTime = self::getRetryWaitTime($method, $httpCode, $headers, $error, $allowed_wait_time, $retryCount);
                 $retryCount++;
             }
         } while ($waitTime > 0.0);
 
-        self::$retryForAllHttpMethods = false;
+        // reset request level retries check
+        self::$retryCurrentRequest = null;
 
         if ($error) {
             throw new Exception($error);
@@ -644,8 +658,8 @@ class Request
     private static function getRetryWaitTime($method, $httpCode, $headers, $error, $allowed_wait_time, $retryCount)
     {
         $retryWaitTime  = 0.0;
-        // if retrying for all http-methods or http-method exists in httpMethodsToRetry
-        if (self::$retryForAllHttpMethods || in_array($method, self::$httpMethodsToRetry)) {
+        // if forcefully retrying request or its http-method exists in httpMethodsToRetry
+        if (self::$retryCurrentRequest == true || in_array($method, self::$httpMethodsToRetry)) {
             $retry_after = 0;
             if ($error) {
                 $retry   = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
