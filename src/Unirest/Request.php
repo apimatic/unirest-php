@@ -612,7 +612,7 @@ class Request
             }
 
             // if retries are enabled at global and request level
-            if (self::$enableRetries && self::$retryCurrentRequest != false) {
+            if (self::$enableRetries && self::$retryCurrentRequest !== false) {
                 // calculate wait time for retry, and should not retry when wait time becomes 0
                 $waitTime = self::getRetryWaitTime($method, $httpCode, $headers, $error, $allowed_wait_time, $retryCount);
                 $retryCount++;
@@ -659,7 +659,7 @@ class Request
     {
         $retryWaitTime  = 0.0;
         // if forcefully retrying request or its http-method exists in httpMethodsToRetry
-        if (self::$retryCurrentRequest == true || in_array($method, self::$httpMethodsToRetry)) {
+        if (self::$retryCurrentRequest === true || in_array($method, self::$httpMethodsToRetry)) {
             $retry_after = 0;
             if ($error) {
                 $retry   = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
