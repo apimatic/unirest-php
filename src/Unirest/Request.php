@@ -644,7 +644,7 @@ class Request
     private static function getRetryWaitTime($method, $httpCode, $headers, $error, $allowed_wait_time, $retryCount)
     {
         $retryWaitTime  = 0.0;
-        // if http-method exists in httpMethodsToRetry
+        // if retrying for all http-methods or http-method exists in httpMethodsToRetry
         if (self::$retryForAllHttpMethods || in_array($method, self::$httpMethodsToRetry)) {
             $retry_after = 0;
             if ($error) {
