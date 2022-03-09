@@ -176,7 +176,7 @@ class Request
     }
 
     /**
-     * Retry next API without checking httpMethodsToRetry list
+     * Retry requests without checking httpMethodsToRetry list
      */
     public static function retryForAllHttpMethods()
     {
