@@ -624,8 +624,8 @@ class Request
      */
     private static function sleep($seconds) {
         $secs = (int) $seconds;
-        // the fraction part of the $seconds will always be less than 1 sec
-        $microSecs  = ($seconds - $secs) * 1000000;
+        // the fraction part of the $seconds will always be less than 1 sec, extracting micro seconds
+        $microSecs  = (int) (($seconds - $secs) * 1000000);
         sleep($secs);
         usleep($microSecs);
     }
