@@ -579,17 +579,17 @@ class Request
             ));
         }
 
-        $retryCount        = 0;                           // current retry count
-        $waitTime          = 0.0;                         // wait time in secs before current api call
-        $allowed_wait_time = self::$maximumRetryWaitTime; // remaining allowed wait time in seconds
-        $httpCode          = null;
-        $headers           = array();
+        $retryCount      = 0;                           // current retry count
+        $waitTime        = 0.0;                         // wait time in secs before current api call
+        $allowedWaitTime = self::$maximumRetryWaitTime; // remaining allowed wait time in seconds
+        $httpCode        = null;
+        $headers         = array();
         do {
             // If Retrying i.e. retryCount >= 1
             if ($retryCount > 0) {
                 self::sleep($waitTime);
                 // calculate remaining allowed wait Time
-                $allowed_wait_time -= $waitTime;
+                $allowedWaitTime -= $waitTime;
             }
 
             // Execution of api call
@@ -602,10 +602,9 @@ class Request
                 $headers     = self::parseHeaders(substr($response, 0, $header_size));
             }
 
-            // if retries are enabled at global and request level
-            if (self::$enableRetries && self::$overrideRetryForNextRequest !== OverrideRetry::DISABLE_RETRY) {
+            if (self::shouldRetryRequest()) {
                 // calculate wait time for retry, and should not retry when wait time becomes 0
-                $waitTime = self::getRetryWaitTime($method, $httpCode, $headers, $error, $allowed_wait_time, $retryCount);
+                $waitTime = self::getRetryWaitTime($method, $httpCode, $headers, $error, $allowedWaitTime, $retryCount);
                 $retryCount++;
             }
         } while ($waitTime > 0.0);
@@ -620,6 +619,16 @@ class Request
         $body = substr($response, $header_size);
 
         return new Response($httpCode, $body, $headers, self::$jsonOpts);
+    }
+
+    /**
+     * Check if retries are enabled at global and request level.
+     *
+     * @return bool
+     */
+    private static function shouldRetryRequest() {
+        return self::$enableRetries && (self::$overrideRetryForNextRequest === OverrideRetry::ENABLE_RETRY
+                || self::$overrideRetryForNextRequest === OverrideRetry::USE_GLOBAL_SETTINGS);
     }
 
     /**
@@ -638,15 +647,15 @@ class Request
     /**
      * Generate calculated wait time, and 0.0 if api should not be retried
      *
-     * @param $method             string|Method  HttpMethod of apiCall
-     * @param $httpCode           int            Http status code in response
-     * @param $headers            array          Response headers
-     * @param $error              string         Error returned by server
-     * @param $allowed_wait_time  int            Remaining allowed wait time
-     * @param $retryCount         int            Attempt number
+     * @param $method          string|Method HttpMethod of apiCall
+     * @param $httpCode        int           Http status code in response
+     * @param $headers         array         Response headers
+     * @param $error           string        Error returned by server
+     * @param $allowedWaitTime int           Remaining allowed wait time
+     * @param $retryCount      int           Attempt number
      * @return float  Wait time before sending the next apiCall
      */
-    private static function getRetryWaitTime($method, $httpCode, $headers, $error, $allowed_wait_time, $retryCount)
+    private static function getRetryWaitTime($method, $httpCode, $headers, $error, $allowedWaitTime, $retryCount)
     {
         $retryWaitTime = 0.0;
         $forceRetry    = self::$overrideRetryForNextRequest === OverrideRetry::ENABLE_RETRY;
@@ -671,7 +680,7 @@ class Request
                 $waitTime    = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
                 // select maximum of waitTime and retry_after
                 $waitTime    = floatval(max($waitTime, $retry_after));
-                if ($waitTime <= $allowed_wait_time) {
+                if ($waitTime <= $allowedWaitTime) {
                     // set retry wait time for next api call, only if its under allowed time
                     $retryWaitTime = $waitTime;
                 }
