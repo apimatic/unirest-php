@@ -636,7 +636,7 @@ class Request
 
     /**
      * Check if retries are enabled at global and request level,
-     * also check if httpMethod is whitelisted if retries are  only enabled globally.
+     * also check whitelisted httpMethods, if retries are only enabled globally.
      *
      * @param $method string|Method HttpMethod of request
      * @return bool
@@ -647,9 +647,10 @@ class Request
                 return self::$enableRetries;
             case OverrideRetry::USE_GLOBAL_SETTINGS:
                 return self::$enableRetries && in_array($method, self::$httpMethodsToRetry);
-            default:
+            case OverrideRetry::DISABLE_RETRY:
                 return false;
         }
+        return false;
     }
 
     /**
