@@ -602,9 +602,9 @@ class Request
                 $headers     = self::parseHeaders(substr($response, 0, $header_size));
             }
 
-            if (self::shouldRetryRequest()) {
+            if (self::shouldRetryRequest($method)) {
                 // calculate wait time for retry, and should not retry when wait time becomes 0
-                $waitTime = self::getRetryWaitTime($method, $httpCode, $headers, $error, $allowedWaitTime, $retryCount);
+                $waitTime = self::getRetryWaitTime($httpCode, $headers, $error, $allowedWaitTime, $retryCount);
                 $retryCount++;
             }
         } while ($waitTime > 0.0);
@@ -622,16 +622,6 @@ class Request
     }
 
     /**
-     * Check if retries are enabled at global and request level.
-     *
-     * @return bool
-     */
-    private static function shouldRetryRequest() {
-        return self::$enableRetries && (self::$overrideRetryForNextRequest === OverrideRetry::ENABLE_RETRY
-                || self::$overrideRetryForNextRequest === OverrideRetry::USE_GLOBAL_SETTINGS);
-    }
-
-    /**
      * Halts program flow for given number of seconds, and microseconds
      *
      * @param $seconds float seconds with upto 6 decimal places, here decimal part will be converted into microseconds
@@ -645,9 +635,27 @@ class Request
     }
 
     /**
+     * Check if retries are enabled at global and request level,
+     * also check whitelisted httpMethods, if retries are only enabled globally.
+     *
+     * @param $method string|Method HttpMethod of request
+     * @return bool
+     */
+    private static function shouldRetryRequest($method) {
+        switch (self::$overrideRetryForNextRequest) {
+            case OverrideRetry::ENABLE_RETRY:
+                return self::$enableRetries;
+            case OverrideRetry::USE_GLOBAL_SETTINGS:
+                return self::$enableRetries && in_array($method, self::$httpMethodsToRetry);
+            case OverrideRetry::DISABLE_RETRY:
+                return false;
+        }
+        return false;
+    }
+
+    /**
      * Generate calculated wait time, and 0.0 if api should not be retried
      *
-     * @param $method          string|Method HttpMethod of apiCall
      * @param $httpCode        int           Http status code in response
      * @param $headers         array         Response headers
      * @param $error           string        Error returned by server
@@ -655,35 +663,31 @@ class Request
      * @param $retryCount      int           Attempt number
      * @return float  Wait time before sending the next apiCall
      */
-    private static function getRetryWaitTime($method, $httpCode, $headers, $error, $allowedWaitTime, $retryCount)
+    private static function getRetryWaitTime($httpCode, $headers, $error, $allowedWaitTime, $retryCount)
     {
         $retryWaitTime = 0.0;
-        $forceRetry    = self::$overrideRetryForNextRequest === OverrideRetry::ENABLE_RETRY;
-        // if forcefully retrying request or its http-method exists in httpMethodsToRetry
-        if ($forceRetry || in_array($method, self::$httpMethodsToRetry)) {
-            $retry_after = 0;
-            if ($error) {
-                $retry   = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
-            } else {
-                // Successful apiCall with some status code or with Retry-After header
-                $headers_lower_keys = array_change_key_case($headers);
-                $retry_after_val = key_exists('retry-after', $headers_lower_keys) ?
-                    $headers_lower_keys['retry-after'] : null;
-                $retry_after = self::getRetryAfterInSeconds($retry_after_val);
-                $retry       = isset($retry_after_val) || in_array($httpCode, self::$httpStatusCodesToRetry);
-            }
-            // Calculate wait time only if max number of retries are not already attempted
-            if ($retry && $retryCount < self::$maxNumberOfRetries) {
-                // noise between 0 and 0.1 secs upto 6 decimal places
-                $noise       = rand(0, 100000) / 1000000;
-                // calculate wait time with exponential backoff and noise in seconds
-                $waitTime    = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
-                // select maximum of waitTime and retry_after
-                $waitTime    = floatval(max($waitTime, $retry_after));
-                if ($waitTime <= $allowedWaitTime) {
-                    // set retry wait time for next api call, only if its under allowed time
-                    $retryWaitTime = $waitTime;
-                }
+        $retry_after   = 0;
+        if ($error) {
+            $retry = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
+        } else {
+            // Successful apiCall with some status code or with Retry-After header
+            $headers_lower_keys = array_change_key_case($headers);
+            $retry_after_val = key_exists('retry-after', $headers_lower_keys) ?
+                $headers_lower_keys['retry-after'] : null;
+            $retry_after = self::getRetryAfterInSeconds($retry_after_val);
+            $retry       = isset($retry_after_val) || in_array($httpCode, self::$httpStatusCodesToRetry);
+        }
+        // Calculate wait time only if max number of retries are not already attempted
+        if ($retry && $retryCount < self::$maxNumberOfRetries) {
+            // noise between 0 and 0.1 secs upto 6 decimal places
+            $noise       = rand(0, 100000) / 1000000;
+            // calculate wait time with exponential backoff and noise in seconds
+            $waitTime    = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
+            // select maximum of waitTime and retry_after
+            $waitTime    = floatval(max($waitTime, $retry_after));
+            if ($waitTime <= $allowedWaitTime) {
+                // set retry wait time for next api call, only if its under allowed time
+                $retryWaitTime = $waitTime;
             }
         }
         return $retryWaitTime;
