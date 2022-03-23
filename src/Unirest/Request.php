@@ -800,7 +800,7 @@ class Request
      * @return string Pre-processed Url as string
      * @throws Exception
      */
-    private static function cleanUrl($url)
+    public static function cleanUrl($url)
     {
         //perform parameter validation
         if (!is_string($url)) {
