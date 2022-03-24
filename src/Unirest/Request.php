@@ -525,7 +525,7 @@ class Request
         }
 
         $curl_base_options = [
-            CURLOPT_URL => self::cleanUrl($url),
+            CURLOPT_URL => self::validateUrl($url),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
@@ -800,7 +800,7 @@ class Request
      * @return string Pre-processed Url as string
      * @throws Exception
      */
-    public static function cleanUrl($url)
+    public static function validateUrl($url)
     {
         //perform parameter validation
         if (!is_string($url)) {
