@@ -525,7 +525,7 @@ class Request
         }
 
         $curl_base_options = [
-            CURLOPT_URL => self::encodeUrl($url),
+            CURLOPT_URL => self::validateUrl($url),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
@@ -794,47 +794,32 @@ class Request
         return $formattedHeaders;
     }
 
-    private static function getArrayFromQuerystring($query)
-    {
-        $query = preg_replace_callback('/(?:^|(?<=&))[^=[]+/', function ($match) {
-            return bin2hex(urldecode($match[0]));
-        }, $query);
-
-        parse_str($query, $values);
-
-        return array_combine(array_map('hex2bin', array_keys($values)), $values);
-    }
-
     /**
-     * Ensure that a URL is encoded and safe to use with cURL
-     * @param  string $url URL to encode
-     * @return string
+     * Validates and processes the given Url to ensure safe usage with cURL.
+     * @param string $url The given Url to process
+     * @return string Pre-processed Url as string
+     * @throws Exception
      */
-    private static function encodeUrl($url)
+    public static function validateUrl($url)
     {
-        $url_parsed = parse_url($url);
-
-        $scheme = $url_parsed['scheme'] . '://';
-        $host   = $url_parsed['host'];
-        $port   = (isset($url_parsed['port']) ? $url_parsed['port'] : null);
-        $path   = (isset($url_parsed['path']) ? $url_parsed['path'] : null);
-        $query  = (isset($url_parsed['query']) ? $url_parsed['query'] : null);
-
-        if ($query !== null) {
-            $query = '?' . http_build_query(self::getArrayFromQuerystring($query));
+        //perform parameter validation
+        if (!is_string($url)) {
+            throw new Exception('Invalid Url.');
         }
-
-        if (null !== $port) {
-            if (!is_string($port)) {
-                $port = strval($port);
-            }
-            if ($port[0] !== ':') {
-                $port = ':' . $port;
-            }
+        //ensure that the urls are absolute
+        $matchCount = preg_match("#^(https?://[^/]+)#", $url, $matches);
+        if ($matchCount == 0) {
+            throw new Exception('Invalid Url format.');
         }
+        //get the http protocol match
+        $protocol = $matches[1];
 
-        $result = $scheme . $host . $port . $path . $query;
-        return $result;
+        //remove redundant forward slashes
+        $query = substr($url, strlen($protocol));
+        $query = preg_replace("#//+#", "/", $query);
+
+        //return process url
+        return $protocol . $query;
     }
 
     private static function getHeaderString($key, $val)

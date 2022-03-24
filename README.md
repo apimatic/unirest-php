@@ -31,7 +31,7 @@ To install `apimatic/unirest-php` with Composer, just add the following to your 
 ```json
 {
     "require": {
-        "apimatic/unirest-php": "^2.2.1"
+        "apimatic/unirest-php": "^2.2.2"
     }
 }
 ```
