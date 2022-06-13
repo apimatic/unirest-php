@@ -83,6 +83,33 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse(property_exists($response->body->headers, 'hello'));
     }
 
+    public function testConnectionReuse()
+    {
+        for ($i = 0; $i < 2; $i++) {
+            $url = "http://httpbin.org/get";
+
+            $_headers = [
+                'Accept' => 'application/json'
+            ];
+
+            Request::get($url, $_headers);
+
+            sleep(1);
+        }
+
+        $this->assertEquals(1, Request::$prevCallSuccessfulConnects);
+
+        $url = "http://httpbin.org/get";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        Request::get($url, $_headers);
+
+        $this->assertEquals(0, Request::$prevCallSuccessfulConnects);
+    }
+
     public function testSetMashapeKey()
     {
         Request::setMashapeKey('abcd');
