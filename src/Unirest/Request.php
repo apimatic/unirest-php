@@ -23,7 +23,8 @@ class Request
     private static $verifyHost = true;
     private static $connectionTimeout = 300;
     private static $defaultHeaders = array(
-        'Connection' => 'Keep-Alive'
+        'Connection' => 'Keep-Alive',
+        'Timeout' => 300
     );
 
     private static $auth = array (
@@ -44,7 +45,7 @@ class Request
         )
     );
 
-    public static $prevCallSuccessfulConnects = 0;
+    protected static $prevCallsSuccessfulConnects = 0;
 
     /**
      * Set JSON decode mode
@@ -230,7 +231,10 @@ class Request
      */
     public static function clearDefaultHeaders()
     {
-        return self::$defaultHeaders = array();
+        return self::$defaultHeaders = array(
+            'Connection' => 'Keep-Alive',
+            'Timeout' => 300
+        );
     }
 
     /**
@@ -504,6 +508,11 @@ class Request
         return $result;
     }
 
+    protected static function forceReInitializeHandle()
+    {
+        self::$handle = curl_init();
+    }
+
     /**
      * Send a cURL request
      * @param \Unirest\Method|string $method HTTP method to use
@@ -520,8 +529,6 @@ class Request
         if (self::$handle == null) {
             self::$handle = curl_init();
         } else {
-            self::$prevCallSuccessfulConnects = curl_getinfo(self::$handle, CURLINFO_NUM_CONNECTS);
-
             curl_reset(self::$handle);
         }
 
@@ -641,6 +648,8 @@ class Request
         }
         // get response body
         $body = substr($response, $header_size);
+
+        self::$prevCallsSuccessfulConnects += curl_getinfo(self::$handle, CURLINFO_NUM_CONNECTS);
 
         return new Response($httpCode, $body, $headers, self::$jsonOpts);
     }

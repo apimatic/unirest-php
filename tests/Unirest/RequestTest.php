@@ -4,6 +4,7 @@ namespace Unirest\Request\Test;
 
 use Unirest\Request as Request;
 use Unirest\Exception as Exception;
+use Unirest\RequestParent as RequestParent;
 
 require __DIR__ . '/../../src/Unirest.php';
 
@@ -85,19 +86,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testConnectionReuse()
     {
-        for ($i = 0; $i < 2; $i++) {
-            $url = "http://httpbin.org/get";
-
-            $_headers = [
-                'Accept' => 'application/json'
-            ];
-
-            Request::get($url, $_headers);
-
-            sleep(1);
-        }
-
-        $this->assertEquals(1, Request::$prevCallSuccessfulConnects);
+        RequestParent::resetHandleAndPrevConnects();
 
         $url = "http://httpbin.org/get";
 
@@ -105,9 +94,114 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        Request::get($url, $_headers);
+        RequestParent::get($url, $_headers);
 
-        $this->assertEquals(0, Request::$prevCallSuccessfulConnects);
+        sleep(1);
+
+        $this->assertEquals(1, RequestParent::getPrevCallsSuccessfulConnects());
+
+        $url = "http://httpbin.org/get";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $this->assertEquals(1, RequestParent::getPrevCallsSuccessfulConnects());
+    }
+
+    public function testConnectionReuseForMultipleDomains()
+    {
+        sleep(1);
+
+        RequestParent::resetHandleAndPrevConnects();
+
+        $url = "http://httpbin.org/get";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $url = "http://ptsv2.com/t/cedqp-1655183385";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $url = "http://en2hoq5smpha9.x.pipedream.net";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        sleep(1);
+
+        $url = "http://httpbin.org/get";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $url = "http://ptsv2.com/t/cedqp-1655183385";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $url = "http://en2hoq5smpha9.x.pipedream.net";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        sleep(1);
+
+        $url = "http://httpbin.org/get";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $url = "http://ptsv2.com/t/cedqp-1655183385";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $url = "http://mockbin.com/request";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $url = "http://en2hoq5smpha9.x.pipedream.net";
+
+        $_headers = [
+            'Accept' => 'application/json'
+        ];
+
+        RequestParent::get($url, $_headers);
+
+        $this->assertEquals(4, RequestParent::getPrevCallsSuccessfulConnects());
     }
 
     public function testSetMashapeKey()
