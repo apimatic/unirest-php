@@ -2,7 +2,7 @@
 
 namespace Unirest;
 
-class RequestParent extends Request
+class RequestChild extends Request
 {
     public static function getPrevCallsSuccessfulConnects()
     {

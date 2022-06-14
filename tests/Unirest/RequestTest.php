@@ -4,7 +4,7 @@ namespace Unirest\Request\Test;
 
 use Unirest\Request as Request;
 use Unirest\Exception as Exception;
-use Unirest\RequestParent as RequestParent;
+use Unirest\RequestChild as RequestChild;
 
 require __DIR__ . '/../../src/Unirest.php';
 
@@ -86,7 +86,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testConnectionReuse()
     {
-        RequestParent::resetHandleAndPrevConnects();
+        RequestChild::resetHandleAndPrevConnects();
 
         $url = "http://httpbin.org/get";
 
@@ -94,11 +94,11 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         sleep(1);
 
-        $this->assertEquals(1, RequestParent::getPrevCallsSuccessfulConnects());
+        $this->assertEquals(1, RequestChild::getPrevCallsSuccessfulConnects());
 
         $url = "http://httpbin.org/get";
 
@@ -106,16 +106,16 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
-        $this->assertEquals(1, RequestParent::getPrevCallsSuccessfulConnects());
+        $this->assertEquals(1, RequestChild::getPrevCallsSuccessfulConnects());
     }
 
     public function testConnectionReuseForMultipleDomains()
     {
         sleep(1);
 
-        RequestParent::resetHandleAndPrevConnects();
+        RequestChild::resetHandleAndPrevConnects();
 
         $url = "http://httpbin.org/get";
 
@@ -123,7 +123,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         $url = "http://ptsv2.com/t/cedqp-1655183385";
 
@@ -131,7 +131,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         $url = "http://en2hoq5smpha9.x.pipedream.net";
 
@@ -139,7 +139,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         sleep(1);
 
@@ -149,7 +149,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         $url = "http://ptsv2.com/t/cedqp-1655183385";
 
@@ -157,7 +157,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         $url = "http://en2hoq5smpha9.x.pipedream.net";
 
@@ -165,7 +165,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         sleep(1);
 
@@ -175,7 +175,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         $url = "http://ptsv2.com/t/cedqp-1655183385";
 
@@ -183,7 +183,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         $url = "http://mockbin.com/request";
 
@@ -191,7 +191,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
         $url = "http://en2hoq5smpha9.x.pipedream.net";
 
@@ -199,9 +199,9 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'Accept' => 'application/json'
         ];
 
-        RequestParent::get($url, $_headers);
+        RequestChild::get($url, $_headers);
 
-        $this->assertEquals(4, RequestParent::getPrevCallsSuccessfulConnects());
+        $this->assertEquals(4, RequestChild::getPrevCallsSuccessfulConnects());
     }
 
     public function testSetMashapeKey()
