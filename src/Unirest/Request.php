@@ -7,7 +7,6 @@ class Request
     private static $cookie = null;
     private static $cookieFile = null;
     private static $curlOpts = array();
-    private static $defaultHeaders = array();
     private static $handle = null;
     private static $jsonOpts = array();
     private static $socketTimeout = null;
@@ -22,6 +21,7 @@ class Request
     private static $overrideRetryForNextRequest = OverrideRetry::USE_GLOBAL_SETTINGS;
     private static $verifyPeer = true;
     private static $verifyHost = true;
+    private static $defaultHeaders = array();
 
     private static $auth = array (
         'user' => '',
@@ -40,6 +40,8 @@ class Request
             'method' => CURLAUTH_BASIC
         )
     );
+
+    protected static $totalNumberOfConnections = 0;
 
     /**
      * Set JSON decode mode
@@ -241,7 +243,7 @@ class Request
     }
 
     /**
-     * Clear all the default headers
+     * Clear all curl opts
      */
     public static function clearCurlOpts()
     {
@@ -488,6 +490,12 @@ class Request
         return $result;
     }
 
+    protected static function initializeHandle()
+    {
+        self::$handle = curl_init();
+        self::$totalNumberOfConnections = 0;
+    }
+
     /**
      * Send a cURL request
      * @param \Unirest\Method|string $method HTTP method to use
@@ -501,17 +509,21 @@ class Request
      */
     public static function send($method, $url, $body = null, $headers = array(), $username = null, $password = null)
     {
-        self::$handle = curl_init();
+        if (self::$handle == null) {
+            self::initializeHandle();
+        } else {
+            curl_reset(self::$handle);
+        }
 
         if ($method !== Method::GET) {
-			if ($method === Method::POST) {
-				curl_setopt(self::$handle, CURLOPT_POST, true);
-			} else {
-                 if ($method === Method::HEAD) {
+            if ($method === Method::POST) {
+                curl_setopt(self::$handle, CURLOPT_POST, true);
+            } else {
+                if ($method === Method::HEAD) {
                     curl_setopt(self::$handle, CURLOPT_NOBODY, true);
-                 }
-				curl_setopt(self::$handle, CURLOPT_CUSTOMREQUEST, $method);
-			}
+                }
+                curl_setopt(self::$handle, CURLOPT_CUSTOMREQUEST, $method);
+            }
 
             curl_setopt(self::$handle, CURLOPT_POSTFIELDS, $body);
         } elseif (is_array($body)) {
@@ -618,6 +630,8 @@ class Request
         // get response body
         $body = substr($response, $header_size);
 
+        self::$totalNumberOfConnections += curl_getinfo(self::$handle, CURLINFO_NUM_CONNECTS);
+
         return new Response($httpCode, $body, $headers, self::$jsonOpts);
     }
 
@@ -626,7 +640,8 @@ class Request
      *
      * @param $seconds float seconds with upto 6 decimal places, here decimal part will be converted into microseconds
      */
-    private static function sleep($seconds) {
+    private static function sleep($seconds)
+    {
         $secs = (int) $seconds;
         // the fraction part of the $seconds will always be less than 1 sec, extracting micro seconds
         $microSecs  = (int) (($seconds - $secs) * 1000000);
@@ -641,7 +656,8 @@ class Request
      * @param $method string|Method HttpMethod of request
      * @return bool
      */
-    private static function shouldRetryRequest($method) {
+    private static function shouldRetryRequest($method)
+    {
         switch (self::$overrideRetryForNextRequest) {
             case OverrideRetry::ENABLE_RETRY:
                 return self::$enableRetries;

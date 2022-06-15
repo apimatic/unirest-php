@@ -4,8 +4,10 @@ namespace Unirest\Request\Test;
 
 use Unirest\Request as Request;
 use Unirest\Exception as Exception;
+use Unirest\RequestChild;
 
 require __DIR__ . '/../../src/Unirest.php';
+require __DIR__ . '/RequestChild.php';
 
 class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 {
@@ -81,6 +83,60 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals(200, $response->code);
         $this->assertFalse(property_exists($response->body->headers, 'hello'));
+    }
+
+    public function testConnectionReuse()
+    {
+        RequestChild::resetHandle();
+        $url = "http://httpbin.org/get";
+
+        // test client sending keep-alive automatically
+        $res = Request::get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(1, RequestChild::getTotalNumberOfConnections());
+
+        // test closing connection after response is received
+        $res = Request::get($url, [ 'Connection' => 'close' ]);
+        $this->assertEquals("close", $res->headers['Connection']);
+        $this->assertEquals(1, RequestChild::getTotalNumberOfConnections());
+
+        // test creating a new connection after closing previous one
+        $res = Request::get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(2, RequestChild::getTotalNumberOfConnections());
+
+        // test persisting the new connection
+        $res = Request::get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(2, RequestChild::getTotalNumberOfConnections());
+    }
+
+    public function testConnectionReuseForMultipleDomains()
+    {
+        RequestChild::resetHandle();
+        $url1 = "http://httpbin.org/get";
+        $url2 = "http://ptsv2.com/t/cedqp-1655183385";
+        $url3 = "http://en2hoq5smpha9.x.pipedream.net";
+        $url4 = "http://mockbin.com/request";
+
+        Request::get($url1);
+        Request::get($url2);
+        Request::get($url3);
+        // test creating 3 connections by calling 3 domains
+        $this->assertEquals(3, RequestChild::getTotalNumberOfConnections());
+
+        Request::get($url1);
+        Request::get($url2);
+        Request::get($url3);
+        // test persisting previous 3 connections
+        $this->assertEquals(3, RequestChild::getTotalNumberOfConnections());
+
+        Request::get($url1);
+        Request::get($url2);
+        Request::get($url3);
+        Request::get($url4);
+        // test adding a new connection by persisting previous ones using a call to another domain
+        $this->assertEquals(4, RequestChild::getTotalNumberOfConnections());
     }
 
     public function testSetMashapeKey()
