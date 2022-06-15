@@ -23,7 +23,6 @@ class Request
     private static $verifyHost = true;
     private static $connectionTimeout = 300;
     private static $defaultHeaders = array(
-        'Connection' => 'Keep-Alive',
         'Timeout' => 300
     );
 
@@ -45,7 +44,7 @@ class Request
         )
     );
 
-    protected static $prevCallsSuccessfulConnects = 0;
+    protected static $totalNumberOfConnections = 0;
 
     /**
      * Set JSON decode mode
@@ -232,7 +231,6 @@ class Request
     public static function clearDefaultHeaders()
     {
         return self::$defaultHeaders = array(
-            'Connection' => 'Keep-Alive',
             'Timeout' => 300
         );
     }
@@ -508,9 +506,10 @@ class Request
         return $result;
     }
 
-    protected static function forceReInitializeHandle()
+    protected static function initializeHandle()
     {
         self::$handle = curl_init();
+        self::$totalNumberOfConnections = 0;
     }
 
     /**
@@ -527,7 +526,7 @@ class Request
     public static function send($method, $url, $body = null, $headers = array(), $username = null, $password = null)
     {
         if (self::$handle == null) {
-            self::$handle = curl_init();
+            self::initializeHandle();
         } else {
             curl_reset(self::$handle);
         }
@@ -649,7 +648,7 @@ class Request
         // get response body
         $body = substr($response, $header_size);
 
-        self::$prevCallsSuccessfulConnects += curl_getinfo(self::$handle, CURLINFO_NUM_CONNECTS);
+        self::$totalNumberOfConnections += curl_getinfo(self::$handle, CURLINFO_NUM_CONNECTS);
 
         return new Response($httpCode, $body, $headers, self::$jsonOpts);
     }

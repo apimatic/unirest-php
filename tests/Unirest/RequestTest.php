@@ -4,9 +4,10 @@ namespace Unirest\Request\Test;
 
 use Unirest\Request as Request;
 use Unirest\Exception as Exception;
-use Unirest\RequestChild as RequestChild;
+use Unirest\RequestChild;
 
 require __DIR__ . '/../../src/Unirest.php';
+require __DIR__ . '/RequestChild.php';
 
 class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 {
@@ -86,122 +87,58 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testConnectionReuse()
     {
-        RequestChild::resetHandleAndPrevConnects();
-
+        RequestChild::resetHandle();
         $url = "http://httpbin.org/get";
 
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
+        // test client sending keep-alive automatically
+        $res = Request::get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(1, RequestChild::getTotalNumberOfConnections());
 
-        RequestChild::get($url, $_headers);
+        // test closing connection after response is received
+        Request::defaultHeader('Connection', 'close');
+        $res = Request::get($url);
+        Request::clearDefaultHeaders();
+        $this->assertEquals("close", $res->headers['Connection']);
+        $this->assertEquals(1, RequestChild::getTotalNumberOfConnections());
 
-        sleep(1);
+        // test creating a new connection after closing previous one
+        $res = Request::get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(2, RequestChild::getTotalNumberOfConnections());
 
-        $this->assertEquals(1, RequestChild::getPrevCallsSuccessfulConnects());
-
-        $url = "http://httpbin.org/get";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $this->assertEquals(1, RequestChild::getPrevCallsSuccessfulConnects());
+        // test persisting the new connection
+        $res = Request::get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(2, RequestChild::getTotalNumberOfConnections());
     }
 
     public function testConnectionReuseForMultipleDomains()
     {
-        sleep(1);
+        RequestChild::resetHandle();
+        $url1 = "http://httpbin.org/get";
+        $url2 = "http://ptsv2.com/t/cedqp-1655183385";
+        $url3 = "http://en2hoq5smpha9.x.pipedream.net";
+        $url4 = "http://mockbin.com/request";
 
-        RequestChild::resetHandleAndPrevConnects();
+        Request::get($url1);
+        Request::get($url2);
+        Request::get($url3);
+        // test creating 3 connections by calling 3 domains
+        $this->assertEquals(3, RequestChild::getTotalNumberOfConnections());
 
-        $url = "http://httpbin.org/get";
+        Request::get($url1);
+        Request::get($url2);
+        Request::get($url3);
+        // test persisting previous 3 connections
+        $this->assertEquals(3, RequestChild::getTotalNumberOfConnections());
 
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $url = "http://ptsv2.com/t/cedqp-1655183385";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $url = "http://en2hoq5smpha9.x.pipedream.net";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        sleep(1);
-
-        $url = "http://httpbin.org/get";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $url = "http://ptsv2.com/t/cedqp-1655183385";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $url = "http://en2hoq5smpha9.x.pipedream.net";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        sleep(1);
-
-        $url = "http://httpbin.org/get";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $url = "http://ptsv2.com/t/cedqp-1655183385";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $url = "http://mockbin.com/request";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $url = "http://en2hoq5smpha9.x.pipedream.net";
-
-        $_headers = [
-            'Accept' => 'application/json'
-        ];
-
-        RequestChild::get($url, $_headers);
-
-        $this->assertEquals(4, RequestChild::getPrevCallsSuccessfulConnects());
+        Request::get($url1);
+        Request::get($url2);
+        Request::get($url3);
+        Request::get($url4);
+        // test adding a new connection by persisting previous ones using a call to another domain
+        $this->assertEquals(4, RequestChild::getTotalNumberOfConnections());
     }
 
     public function testSetMashapeKey()
