@@ -21,10 +21,7 @@ class Request
     private static $overrideRetryForNextRequest = OverrideRetry::USE_GLOBAL_SETTINGS;
     private static $verifyPeer = true;
     private static $verifyHost = true;
-    private static $connectionTimeout = 300;
-    private static $defaultHeaders = array(
-        'Timeout' => 300
-    );
+    private static $defaultHeaders = array();
 
     private static $auth = array (
         'user' => '',
@@ -90,17 +87,6 @@ class Request
     public static function timeout($seconds)
     {
         return self::$socketTimeout = $seconds;
-    }
-
-    /**
-     * Set a connection timeout
-     *
-     * @param integer $seconds Connection timeout value in seconds
-     * @return integer
-     */
-    public static function connectionTimeout($seconds)
-    {
-        return self::$connectionTimeout = $seconds;
     }
 
     /**
@@ -230,9 +216,7 @@ class Request
      */
     public static function clearDefaultHeaders()
     {
-        return self::$defaultHeaders = array(
-            'Timeout' => 300
-        );
+        return self::$defaultHeaders = array();
     }
 
     /**
@@ -551,8 +535,6 @@ class Request
 
             $url .= urldecode(http_build_query(self::buildHTTPCurlQuery($body)));
         }
-
-        self::$defaultHeaders["Timeout"] = self::$connectionTimeout;
 
         $curl_base_options = [
             CURLOPT_URL => self::validateUrl($url),
