@@ -96,9 +96,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(1, RequestChild::getTotalNumberOfConnections());
 
         // test closing connection after response is received
-        Request::defaultHeader('Connection', 'close');
-        $res = Request::get($url);
-        Request::clearDefaultHeaders();
+        $res = Request::get($url, [ 'Connection' => 'close' ]);
         $this->assertEquals("close", $res->headers['Connection']);
         $this->assertEquals(1, RequestChild::getTotalNumberOfConnections());
 
