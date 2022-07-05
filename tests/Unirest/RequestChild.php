@@ -4,13 +4,13 @@ namespace Unirest;
 
 class RequestChild extends Request
 {
-    public static function getTotalNumberOfConnections()
+    public function getTotalNumberOfConnections()
     {
-        return parent::$totalNumberOfConnections;
+        return $this->totalNumberOfConnections;
     }
 
-    public static function resetHandle()
+    public function resetHandle()
     {
-        parent::initializeHandle();
+        $this->initializeHandle();
     }
 }

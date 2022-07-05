@@ -4,32 +4,32 @@ namespace Unirest;
 
 class Request
 {
-    private static $cookie = null;
-    private static $cookieFile = null;
-    private static $curlOpts = array();
-    private static $handle = null;
-    private static $jsonOpts = array();
-    private static $socketTimeout = null;
-    private static $enableRetries = false;       // should we enable retries feature
-    private static $maxNumberOfRetries = 3;      // total number of allowed retries
-    private static $retryOnTimeout = false;      // Should we retry on timeout?
-    private static $retryInterval = 1.0;         // Initial retry interval in seconds, to be increased by backoffFactor
-    private static $maximumRetryWaitTime = 120;  // maximum retry wait time (commutative)
-    private static $backoffFactor = 2.0;         // backoff factor to be used to increase retry interval
-    private static $httpStatusCodesToRetry = array(408, 413, 429, 500, 502, 503, 504, 521, 522, 524);
-    private static $httpMethodsToRetry = array("GET", "PUT");
-    private static $overrideRetryForNextRequest = OverrideRetry::USE_GLOBAL_SETTINGS;
-    private static $verifyPeer = true;
-    private static $verifyHost = true;
-    private static $defaultHeaders = array();
+    private $cookie = null;
+    private $cookieFile = null;
+    private $curlOpts = array();
+    private $handle = null;
+    private $jsonOpts = array();
+    private $socketTimeout = null;
+    private $enableRetries = false;       // should we enable retries feature
+    private $maxNumberOfRetries = 3;      // total number of allowed retries
+    private $retryOnTimeout = false;      // Should we retry on timeout?
+    private $retryInterval = 1.0;         // Initial retry interval in seconds, to be increased by backoffFactor
+    private $maximumRetryWaitTime = 120;  // maximum retry wait time (commutative)
+    private $backoffFactor = 2.0;         // backoff factor to be used to increase retry interval
+    private $httpStatusCodesToRetry = array(408, 413, 429, 500, 502, 503, 504, 521, 522, 524);
+    private $httpMethodsToRetry = array("GET", "PUT");
+    private $overrideRetryForNextRequest = OverrideRetry::USE_GLOBAL_SETTINGS;
+    private $verifyPeer = true;
+    private $verifyHost = true;
+    private $defaultHeaders = array();
 
-    private static $auth = array (
+    private $auth = array (
         'user' => '',
         'pass' => '',
         'method' => CURLAUTH_BASIC
     );
 
-    private static $proxy = array(
+    private $proxy = array(
         'port' => false,
         'tunnel' => false,
         'address' => false,
@@ -41,7 +41,7 @@ class Request
         )
     );
 
-    protected static $totalNumberOfConnections = 0;
+    protected $totalNumberOfConnections = 0;
 
     /**
      * Set JSON decode mode
@@ -51,9 +51,9 @@ class Request
      * @param integer $options Bitmask of JSON decode options. Currently only JSON_BIGINT_AS_STRING is supported (default is to cast large integers as floats)
      * @return array
      */
-    public static function jsonOpts($assoc = false, $depth = 512, $options = 0)
+    public function jsonOpts($assoc = false, $depth = 512, $options = 0)
     {
-        return self::$jsonOpts = array($assoc, $depth, $options);
+        return $this->jsonOpts = array($assoc, $depth, $options);
     }
 
     /**
@@ -62,9 +62,9 @@ class Request
      * @param bool $enabled enable SSL verification, by default is true
      * @return bool
      */
-    public static function verifyPeer($enabled)
+    public function verifyPeer($enabled)
     {
-        return self::$verifyPeer = $enabled;
+        return $this->verifyPeer = $enabled;
     }
 
     /**
@@ -73,9 +73,9 @@ class Request
      * @param bool $enabled enable SSL host verification, by default is true
      * @return bool
      */
-    public static function verifyHost($enabled)
+    public function verifyHost($enabled)
     {
-        return self::$verifyHost = $enabled;
+        return $this->verifyHost = $enabled;
     }
 
     /**
@@ -84,9 +84,9 @@ class Request
      * @param integer $seconds timeout value in seconds
      * @return integer
      */
-    public static function timeout($seconds)
+    public function timeout($seconds)
     {
-        return self::$socketTimeout = $seconds;
+        return $this->socketTimeout = $seconds;
     }
 
     /**
@@ -95,9 +95,9 @@ class Request
      * @param bool $enableRetries
      * @return bool
      */
-    public static function enableRetries($enableRetries)
+    public function enableRetries($enableRetries)
     {
-        return self::$enableRetries = $enableRetries;
+        return $this->enableRetries = $enableRetries;
     }
 
     /**
@@ -106,9 +106,9 @@ class Request
      * @param integer $maxNumberOfRetries
      * @return integer
      */
-    public static function maxNumberOfRetries($maxNumberOfRetries)
+    public function maxNumberOfRetries($maxNumberOfRetries)
     {
-        return self::$maxNumberOfRetries = $maxNumberOfRetries;
+        return $this->maxNumberOfRetries = $maxNumberOfRetries;
     }
 
     /**
@@ -117,9 +117,9 @@ class Request
      * @param bool $retryOnTimeout
      * @return bool
      */
-    public static function retryOnTimeout($retryOnTimeout)
+    public function retryOnTimeout($retryOnTimeout)
     {
-        return self::$retryOnTimeout = $retryOnTimeout;
+        return $this->retryOnTimeout = $retryOnTimeout;
     }
 
     /**
@@ -128,9 +128,9 @@ class Request
      * @param float $retryInterval
      * @return float
      */
-    public static function retryInterval($retryInterval)
+    public function retryInterval($retryInterval)
     {
-        return self::$retryInterval = $retryInterval;
+        return $this->retryInterval = $retryInterval;
     }
 
     /**
@@ -139,9 +139,9 @@ class Request
      * @param integer $maximumRetryWaitTime
      * @return integer
      */
-    public static function maximumRetryWaitTime($maximumRetryWaitTime)
+    public function maximumRetryWaitTime($maximumRetryWaitTime)
     {
-        return self::$maximumRetryWaitTime = $maximumRetryWaitTime;
+        return $this->maximumRetryWaitTime = $maximumRetryWaitTime;
     }
 
     /**
@@ -150,9 +150,9 @@ class Request
      * @param float $backoffFactor
      * @return float
      */
-    public static function backoffFactor($backoffFactor)
+    public function backoffFactor($backoffFactor)
     {
-        return self::$backoffFactor = $backoffFactor;
+        return $this->backoffFactor = $backoffFactor;
     }
 
     /**
@@ -161,9 +161,9 @@ class Request
      * @param integer[] $httpStatusCodesToRetry
      * @return integer[]
      */
-    public static function httpStatusCodesToRetry($httpStatusCodesToRetry)
+    public function httpStatusCodesToRetry($httpStatusCodesToRetry)
     {
-        return self::$httpStatusCodesToRetry = $httpStatusCodesToRetry;
+        return $this->httpStatusCodesToRetry = $httpStatusCodesToRetry;
     }
 
     /**
@@ -172,9 +172,9 @@ class Request
      * @param string[] $httpMethodsToRetry
      * @return string[]
      */
-    public static function httpMethodsToRetry($httpMethodsToRetry)
+    public function httpMethodsToRetry($httpMethodsToRetry)
     {
-        return self::$httpMethodsToRetry = $httpMethodsToRetry;
+        return $this->httpMethodsToRetry = $httpMethodsToRetry;
     }
 
     /**
@@ -183,9 +183,9 @@ class Request
      * @param string $overrideRetryForNextRequest
      * @return string
      */
-    public static function overrideRetryForNextRequest($overrideRetryForNextRequest)
+    public function overrideRetryForNextRequest($overrideRetryForNextRequest)
     {
-        return self::$overrideRetryForNextRequest = $overrideRetryForNextRequest;
+        return $this->overrideRetryForNextRequest = $overrideRetryForNextRequest;
     }
 
     /**
@@ -194,9 +194,9 @@ class Request
      * @param array $headers headers array
      * @return array
      */
-    public static function defaultHeaders($headers)
+    public function defaultHeaders($headers)
     {
-        return self::$defaultHeaders = array_merge(self::$defaultHeaders, $headers);
+        return $this->defaultHeaders = array_merge($this->defaultHeaders, $headers);
     }
 
     /**
@@ -206,17 +206,17 @@ class Request
      * @param string $value header value
      * @return string
      */
-    public static function defaultHeader($name, $value)
+    public function defaultHeader($name, $value)
     {
-        return self::$defaultHeaders[$name] = $value;
+        return $this->defaultHeaders[$name] = $value;
     }
 
     /**
      * Clear all the default headers
      */
-    public static function clearDefaultHeaders()
+    public function clearDefaultHeaders()
     {
-        return self::$defaultHeaders = array();
+        return $this->defaultHeaders = array();
     }
 
     /**
@@ -225,9 +225,9 @@ class Request
      * @param array $options options array
      * @return array
      */
-    public static function curlOpts($options)
+    public function curlOpts($options)
     {
-        return self::mergeCurlOptions(self::$curlOpts, $options);
+        return $this->mergeCurlOptions($this->curlOpts, $options);
     }
 
     /**
@@ -237,17 +237,17 @@ class Request
      * @param string $value header value
      * @return string
      */
-    public static function curlOpt($name, $value)
+    public function curlOpt($name, $value)
     {
-        return self::$curlOpts[$name] = $value;
+        return $this->curlOpts[$name] = $value;
     }
 
     /**
      * Clear all curl opts
      */
-    public static function clearCurlOpts()
+    public function clearCurlOpts()
     {
-        return self::$curlOpts = array();
+        return $this->curlOpts = array();
     }
 
     /**
@@ -260,9 +260,9 @@ class Request
      * @param string $key Mashape key
      * @return string
      */
-    public static function setMashapeKey($key)
+    public function setMashapeKey($key)
     {
-        return self::defaultHeader('X-Mashape-Key', $key);
+        return $this->defaultHeader('X-Mashape-Key', $key);
     }
 
     /**
@@ -270,9 +270,9 @@ class Request
      *
      * @param string $cookie
      */
-    public static function cookie($cookie)
+    public function cookie($cookie)
     {
-        self::$cookie = $cookie;
+        $this->cookie = $cookie;
     }
 
     /**
@@ -282,9 +282,9 @@ class Request
      *
      * @param string $cookieFile - path to file for saving cookie
      */
-    public static function cookieFile($cookieFile)
+    public function cookieFile($cookieFile)
     {
-        self::$cookieFile = $cookieFile;
+        $this->cookieFile = $cookieFile;
     }
 
     /**
@@ -294,11 +294,11 @@ class Request
      * @param string $password authentication password
      * @param integer $method authentication method
      */
-    public static function auth($username = '', $password = '', $method = CURLAUTH_BASIC)
+    public function auth($username = '', $password = '', $method = CURLAUTH_BASIC)
     {
-        self::$auth['user'] = $username;
-        self::$auth['pass'] = $password;
-        self::$auth['method'] = $method;
+        $this->auth['user'] = $username;
+        $this->auth['pass'] = $password;
+        $this->auth['method'] = $method;
     }
 
     /**
@@ -309,12 +309,12 @@ class Request
      * @param integer $type (Available options for this are CURLPROXY_HTTP, CURLPROXY_HTTP_1_0 CURLPROXY_SOCKS4, CURLPROXY_SOCKS5, CURLPROXY_SOCKS4A and CURLPROXY_SOCKS5_HOSTNAME)
      * @param bool $tunnel enable/disable tunneling
      */
-    public static function proxy($address, $port = 1080, $type = CURLPROXY_HTTP, $tunnel = false)
+    public function proxy($address, $port = 1080, $type = CURLPROXY_HTTP, $tunnel = false)
     {
-        self::$proxy['type'] = $type;
-        self::$proxy['port'] = $port;
-        self::$proxy['tunnel'] = $tunnel;
-        self::$proxy['address'] = $address;
+        $this->proxy['type'] = $type;
+        $this->proxy['port'] = $port;
+        $this->proxy['tunnel'] = $tunnel;
+        $this->proxy['address'] = $address;
     }
 
     /**
@@ -324,11 +324,11 @@ class Request
      * @param string $password authentication password
      * @param integer $method authentication method
      */
-    public static function proxyAuth($username = '', $password = '', $method = CURLAUTH_BASIC)
+    public function proxyAuth($username = '', $password = '', $method = CURLAUTH_BASIC)
     {
-        self::$proxy['auth']['user'] = $username;
-        self::$proxy['auth']['pass'] = $password;
-        self::$proxy['auth']['method'] = $method;
+        $this->proxy['auth']['user'] = $username;
+        $this->proxy['auth']['pass'] = $password;
+        $this->proxy['auth']['method'] = $method;
     }
 
     /**
@@ -341,9 +341,9 @@ class Request
      * @param string $password Authentication password (deprecated)
      * @return Response
      */
-    public static function get($url, $headers = array(), $parameters = null, $username = null, $password = null)
+    public function get($url, $headers = array(), $parameters = null, $username = null, $password = null)
     {
-        return self::send(Method::GET, $url, $parameters, $headers, $username, $password);
+        return $this->send(Method::GET, $url, $parameters, $headers, $username, $password);
     }
 
     /**
@@ -355,9 +355,9 @@ class Request
      * @param string $password Basic Authentication password (deprecated)
      * @return Response
      */
-    public static function head($url, $headers = array(), $parameters = null, $username = null, $password = null)
+    public function head($url, $headers = array(), $parameters = null, $username = null, $password = null)
     {
-        return self::send(Method::HEAD, $url, $parameters, $headers, $username, $password);
+        return $this->send(Method::HEAD, $url, $parameters, $headers, $username, $password);
     }
 
     /**
@@ -369,9 +369,9 @@ class Request
      * @param string $password Basic Authentication password
      * @return Response
      */
-    public static function options($url, $headers = array(), $parameters = null, $username = null, $password = null)
+    public function options($url, $headers = array(), $parameters = null, $username = null, $password = null)
     {
-        return self::send(Method::OPTIONS, $url, $parameters, $headers, $username, $password);
+        return $this->send(Method::OPTIONS, $url, $parameters, $headers, $username, $password);
     }
 
     /**
@@ -383,9 +383,9 @@ class Request
      * @param string $password Basic Authentication password (deprecated)
      * @return Response
      */
-    public static function connect($url, $headers = array(), $parameters = null, $username = null, $password = null)
+    public function connect($url, $headers = array(), $parameters = null, $username = null, $password = null)
     {
-        return self::send(Method::CONNECT, $url, $parameters, $headers, $username, $password);
+        return $this->send(Method::CONNECT, $url, $parameters, $headers, $username, $password);
     }
 
     /**
@@ -397,9 +397,9 @@ class Request
      * @param string $password Basic Authentication password (deprecated)
      * @return Response response
      */
-    public static function post($url, $headers = array(), $body = null, $username = null, $password = null)
+    public function post($url, $headers = array(), $body = null, $username = null, $password = null)
     {
-        return self::send(Method::POST, $url, $body, $headers, $username, $password);
+        return $this->send(Method::POST, $url, $body, $headers, $username, $password);
     }
 
     /**
@@ -411,9 +411,9 @@ class Request
      * @param string $password Basic Authentication password (deprecated)
      * @return Response
      */
-    public static function delete($url, $headers = array(), $body = null, $username = null, $password = null)
+    public function delete($url, $headers = array(), $body = null, $username = null, $password = null)
     {
-        return self::send(Method::DELETE, $url, $body, $headers, $username, $password);
+        return $this->send(Method::DELETE, $url, $body, $headers, $username, $password);
     }
 
     /**
@@ -425,9 +425,9 @@ class Request
      * @param string $password Basic Authentication password (deprecated)
      * @return Response
      */
-    public static function put($url, $headers = array(), $body = null, $username = null, $password = null)
+    public function put($url, $headers = array(), $body = null, $username = null, $password = null)
     {
-        return self::send(Method::PUT, $url, $body, $headers, $username, $password);
+        return $this->send(Method::PUT, $url, $body, $headers, $username, $password);
     }
 
     /**
@@ -439,9 +439,9 @@ class Request
      * @param string $password Basic Authentication password (deprecated)
      * @return Response
      */
-    public static function patch($url, $headers = array(), $body = null, $username = null, $password = null)
+    public function patch($url, $headers = array(), $body = null, $username = null, $password = null)
     {
-        return self::send(Method::PATCH, $url, $body, $headers, $username, $password);
+        return $this->send(Method::PATCH, $url, $body, $headers, $username, $password);
     }
 
     /**
@@ -453,9 +453,9 @@ class Request
      * @param string $password Basic Authentication password (deprecated)
      * @return Response
      */
-    public static function trace($url, $headers = array(), $body = null, $username = null, $password = null)
+    public function trace($url, $headers = array(), $body = null, $username = null, $password = null)
     {
-        return self::send(Method::TRACE, $url, $body, $headers, $username, $password);
+        return $this->send(Method::TRACE, $url, $body, $headers, $username, $password);
     }
 
     /**
@@ -465,7 +465,7 @@ class Request
      * @param bool|string $parent parent key or false if no parent
      * @return array
      */
-    public static function buildHTTPCurlQuery($data, $parent = false)
+    public function buildHTTPCurlQuery($data, $parent = false)
     {
         $result = array();
 
@@ -481,7 +481,7 @@ class Request
             }
 
             if (!$value instanceof \CURLFile and (is_array($value) or is_object($value))) {
-                $result = array_merge($result, self::buildHTTPCurlQuery($value, $new_key));
+                $result = array_merge($result, $this->buildHTTPCurlQuery($value, $new_key));
             } else {
                 $result[$new_key] = $value;
             }
@@ -490,10 +490,10 @@ class Request
         return $result;
     }
 
-    protected static function initializeHandle()
+    protected function initializeHandle()
     {
-        self::$handle = curl_init();
-        self::$totalNumberOfConnections = 0;
+        $this->handle = curl_init();
+        $this->totalNumberOfConnections = 0;
     }
 
     /**
@@ -507,25 +507,25 @@ class Request
      * @throws \Unirest\Exception if a cURL error occurs
      * @return Response
      */
-    public static function send($method, $url, $body = null, $headers = array(), $username = null, $password = null)
+    public function send($method, $url, $body = null, $headers = array(), $username = null, $password = null)
     {
-        if (self::$handle == null) {
-            self::initializeHandle();
+        if ($this->handle == null) {
+            $this->initializeHandle();
         } else {
-            curl_reset(self::$handle);
+            curl_reset($this->handle);
         }
 
         if ($method !== Method::GET) {
             if ($method === Method::POST) {
-                curl_setopt(self::$handle, CURLOPT_POST, true);
+                curl_setopt($this->handle, CURLOPT_POST, true);
             } else {
                 if ($method === Method::HEAD) {
-                    curl_setopt(self::$handle, CURLOPT_NOBODY, true);
+                    curl_setopt($this->handle, CURLOPT_NOBODY, true);
                 }
-                curl_setopt(self::$handle, CURLOPT_CUSTOMREQUEST, $method);
+                curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, $method);
             }
 
-            curl_setopt(self::$handle, CURLOPT_POSTFIELDS, $body);
+            curl_setopt($this->handle, CURLOPT_POSTFIELDS, $body);
         } elseif (is_array($body)) {
             if (strpos($url, '?') !== false) {
                 $url .= '&';
@@ -533,96 +533,96 @@ class Request
                 $url .= '?';
             }
 
-            $url .= urldecode(http_build_query(self::buildHTTPCurlQuery($body)));
+            $url .= urldecode(http_build_query($this->buildHTTPCurlQuery($body)));
         }
 
         $curl_base_options = [
-            CURLOPT_URL => self::validateUrl($url),
+            CURLOPT_URL => $this->validateUrl($url),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_HTTPHEADER => self::getFormattedHeaders($headers),
+            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($headers),
             CURLOPT_HEADER => true,
-            CURLOPT_SSL_VERIFYPEER => self::$verifyPeer,
+            CURLOPT_SSL_VERIFYPEER => $this->verifyPeer,
             //CURLOPT_SSL_VERIFYHOST accepts only 0 (false) or 2 (true). Future versions of libcurl will treat values 1 and 2 as equals
-            CURLOPT_SSL_VERIFYHOST => self::$verifyHost === false ? 0 : 2,
+            CURLOPT_SSL_VERIFYHOST => $this->verifyHost === false ? 0 : 2,
             // If an empty string, '', is set, a header containing all supported encoding types is sent
             CURLOPT_ENCODING => ''
         ];
 
-        curl_setopt_array(self::$handle, self::mergeCurlOptions($curl_base_options, self::$curlOpts));
+        curl_setopt_array($this->handle, $this->mergeCurlOptions($curl_base_options, $this->curlOpts));
 
-        if (self::$socketTimeout !== null) {
-            curl_setopt(self::$handle, CURLOPT_TIMEOUT, self::$socketTimeout);
+        if ($this->socketTimeout !== null) {
+            curl_setopt($this->handle, CURLOPT_TIMEOUT, $this->socketTimeout);
         }
 
-        if (self::$cookie) {
-            curl_setopt(self::$handle, CURLOPT_COOKIE, self::$cookie);
+        if ($this->cookie) {
+            curl_setopt($this->handle, CURLOPT_COOKIE, $this->cookie);
         }
 
-        if (self::$cookieFile) {
-            curl_setopt(self::$handle, CURLOPT_COOKIEFILE, self::$cookieFile);
-            curl_setopt(self::$handle, CURLOPT_COOKIEJAR, self::$cookieFile);
+        if ($this->cookieFile) {
+            curl_setopt($this->handle, CURLOPT_COOKIEFILE, $this->cookieFile);
+            curl_setopt($this->handle, CURLOPT_COOKIEJAR, $this->cookieFile);
         }
 
         // supporting deprecated http auth method
         if (!empty($username)) {
-            curl_setopt_array(self::$handle, array(
+            curl_setopt_array($this->handle, array(
                 CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
                 CURLOPT_USERPWD => $username . ':' . $password
             ));
         }
 
-        if (!empty(self::$auth['user'])) {
-            curl_setopt_array(self::$handle, array(
-                CURLOPT_HTTPAUTH    => self::$auth['method'],
-                CURLOPT_USERPWD     => self::$auth['user'] . ':' . self::$auth['pass']
+        if (!empty($this->auth['user'])) {
+            curl_setopt_array($this->handle, array(
+                CURLOPT_HTTPAUTH    => $this->auth['method'],
+                CURLOPT_USERPWD     => $this->auth['user'] . ':' . $this->auth['pass']
             ));
         }
 
-        if (self::$proxy['address'] !== false) {
-            curl_setopt_array(self::$handle, array(
-                CURLOPT_PROXYTYPE       => self::$proxy['type'],
-                CURLOPT_PROXY           => self::$proxy['address'],
-                CURLOPT_PROXYPORT       => self::$proxy['port'],
-                CURLOPT_HTTPPROXYTUNNEL => self::$proxy['tunnel'],
-                CURLOPT_PROXYAUTH       => self::$proxy['auth']['method'],
-                CURLOPT_PROXYUSERPWD    => self::$proxy['auth']['user'] . ':' . self::$proxy['auth']['pass']
+        if ($this->proxy['address'] !== false) {
+            curl_setopt_array($this->handle, array(
+                CURLOPT_PROXYTYPE       => $this->proxy['type'],
+                CURLOPT_PROXY           => $this->proxy['address'],
+                CURLOPT_PROXYPORT       => $this->proxy['port'],
+                CURLOPT_HTTPPROXYTUNNEL => $this->proxy['tunnel'],
+                CURLOPT_PROXYAUTH       => $this->proxy['auth']['method'],
+                CURLOPT_PROXYUSERPWD    => $this->proxy['auth']['user'] . ':' . $this->proxy['auth']['pass']
             ));
         }
 
         $retryCount      = 0;                           // current retry count
         $waitTime        = 0.0;                         // wait time in secs before current api call
-        $allowedWaitTime = self::$maximumRetryWaitTime; // remaining allowed wait time in seconds
+        $allowedWaitTime = $this->maximumRetryWaitTime; // remaining allowed wait time in seconds
         $httpCode        = null;
         $headers         = array();
         do {
             // If Retrying i.e. retryCount >= 1
             if ($retryCount > 0) {
-                self::sleep($waitTime);
+                $this->sleep($waitTime);
                 // calculate remaining allowed wait Time
                 $allowedWaitTime -= $waitTime;
             }
 
             // Execution of api call
-            $response  = curl_exec(self::$handle);
-            $error     = curl_error(self::$handle);
-            $info      = self::getInfo();
+            $response  = curl_exec($this->handle);
+            $error     = curl_error($this->handle);
+            $info      = $this->getInfo();
             if (!$error) {
                 $header_size = $info['header_size'];
                 $httpCode    = $info['http_code'];
-                $headers     = self::parseHeaders(substr($response, 0, $header_size));
+                $headers     = $this->parseHeaders(substr($response, 0, $header_size));
             }
 
-            if (self::shouldRetryRequest($method)) {
+            if ($this->shouldRetryRequest($method)) {
                 // calculate wait time for retry, and should not retry when wait time becomes 0
-                $waitTime = self::getRetryWaitTime($httpCode, $headers, $error, $allowedWaitTime, $retryCount);
+                $waitTime = $this->getRetryWaitTime($httpCode, $headers, $error, $allowedWaitTime, $retryCount);
                 $retryCount++;
             }
         } while ($waitTime > 0.0);
 
         // reset request level retries check
-        self::$overrideRetryForNextRequest = OverrideRetry::USE_GLOBAL_SETTINGS;
+        $this->overrideRetryForNextRequest = OverrideRetry::USE_GLOBAL_SETTINGS;
 
         if ($error) {
             throw new Exception($error);
@@ -630,9 +630,9 @@ class Request
         // get response body
         $body = substr($response, $header_size);
 
-        self::$totalNumberOfConnections += curl_getinfo(self::$handle, CURLINFO_NUM_CONNECTS);
+        $this->totalNumberOfConnections += curl_getinfo($this->handle, CURLINFO_NUM_CONNECTS);
 
-        return new Response($httpCode, $body, $headers, self::$jsonOpts);
+        return new Response($httpCode, $body, $headers, $this->jsonOpts);
     }
 
     /**
@@ -640,7 +640,7 @@ class Request
      *
      * @param $seconds float seconds with upto 6 decimal places, here decimal part will be converted into microseconds
      */
-    private static function sleep($seconds)
+    private function sleep($seconds)
     {
         $secs = (int) $seconds;
         // the fraction part of the $seconds will always be less than 1 sec, extracting micro seconds
@@ -656,13 +656,13 @@ class Request
      * @param $method string|Method HttpMethod of request
      * @return bool
      */
-    private static function shouldRetryRequest($method)
+    private function shouldRetryRequest($method)
     {
-        switch (self::$overrideRetryForNextRequest) {
+        switch ($this->overrideRetryForNextRequest) {
             case OverrideRetry::ENABLE_RETRY:
-                return self::$enableRetries;
+                return $this->enableRetries;
             case OverrideRetry::USE_GLOBAL_SETTINGS:
-                return self::$enableRetries && in_array($method, self::$httpMethodsToRetry);
+                return $this->enableRetries && in_array($method, $this->httpMethodsToRetry);
             case OverrideRetry::DISABLE_RETRY:
                 return false;
         }
@@ -679,26 +679,26 @@ class Request
      * @param $retryCount      int           Attempt number
      * @return float  Wait time before sending the next apiCall
      */
-    private static function getRetryWaitTime($httpCode, $headers, $error, $allowedWaitTime, $retryCount)
+    private function getRetryWaitTime($httpCode, $headers, $error, $allowedWaitTime, $retryCount)
     {
         $retryWaitTime = 0.0;
         $retry_after   = 0;
         if ($error) {
-            $retry = self::$retryOnTimeout && curl_errno(self::$handle) == CURLE_OPERATION_TIMEDOUT;
+            $retry = $this->retryOnTimeout && curl_errno($this->handle) == CURLE_OPERATION_TIMEDOUT;
         } else {
             // Successful apiCall with some status code or with Retry-After header
             $headers_lower_keys = array_change_key_case($headers);
             $retry_after_val = key_exists('retry-after', $headers_lower_keys) ?
                 $headers_lower_keys['retry-after'] : null;
-            $retry_after = self::getRetryAfterInSeconds($retry_after_val);
-            $retry       = isset($retry_after_val) || in_array($httpCode, self::$httpStatusCodesToRetry);
+            $retry_after = $this->getRetryAfterInSeconds($retry_after_val);
+            $retry       = isset($retry_after_val) || in_array($httpCode, $this->httpStatusCodesToRetry);
         }
         // Calculate wait time only if max number of retries are not already attempted
-        if ($retry && $retryCount < self::$maxNumberOfRetries) {
+        if ($retry && $retryCount < $this->maxNumberOfRetries) {
             // noise between 0 and 0.1 secs upto 6 decimal places
             $noise       = rand(0, 100000) / 1000000;
             // calculate wait time with exponential backoff and noise in seconds
-            $waitTime    = (self::$retryInterval * pow(self::$backoffFactor, $retryCount)) + $noise;
+            $waitTime    = ($this->retryInterval * pow($this->backoffFactor, $retryCount)) + $noise;
             // select maximum of waitTime and retry_after
             $waitTime    = floatval(max($waitTime, $retry_after));
             if ($waitTime <= $allowedWaitTime) {
@@ -716,7 +716,7 @@ class Request
      *                     formatted datetime string
      * @return int Number of seconds specified by retry-after param
      */
-    private static function getRetryAfterInSeconds($retry_after)
+    private function getRetryAfterInSeconds($retry_after)
     {
         if (isset($retry_after)) {
             if (is_numeric($retry_after)) {
@@ -732,14 +732,14 @@ class Request
     }
 
     /**
-     * if PECL_HTTP is not available use a fall back function
+     * if PECL_HTTP is not available use a fallback function
      *
      * thanks to ricardovermeltfoort@gmail.com
      * http://php.net/manual/en/function.http-parse-headers.php#112986
      * @param string $raw_headers raw headers
      * @return array
      */
-    private static function parseHeaders($raw_headers)
+    private function parseHeaders($raw_headers)
     {
         if (function_exists('http_parse_headers')) {
             return http_parse_headers($raw_headers);
@@ -773,30 +773,30 @@ class Request
         }
     }
 
-    public static function getInfo($opt = false)
+    public function getInfo($opt = false)
     {
         if ($opt) {
-            $info = curl_getinfo(self::$handle, $opt);
+            $info = curl_getinfo($this->handle, $opt);
         } else {
-            $info = curl_getinfo(self::$handle);
+            $info = curl_getinfo($this->handle);
         }
 
         return $info;
     }
 
-    public static function getCurlHandle()
+    public function getCurlHandle()
     {
-        return self::$handle;
+        return $this->handle;
     }
 
-    public static function getFormattedHeaders($headers)
+    public function getFormattedHeaders($headers)
     {
         $formattedHeaders = array();
 
-        $combinedHeaders = array_change_key_case(array_merge(self::$defaultHeaders, (array) $headers));
+        $combinedHeaders = array_change_key_case(array_merge($this->defaultHeaders, (array) $headers));
 
         foreach ($combinedHeaders as $key => $val) {
-            $formattedHeaders[] = self::getHeaderString($key, $val);
+            $formattedHeaders[] = $this->getHeaderString($key, $val);
         }
 
         if (!array_key_exists('user-agent', $combinedHeaders)) {
@@ -816,7 +816,7 @@ class Request
      * @return string Pre-processed Url as string
      * @throws Exception
      */
-    public static function validateUrl($url)
+    public function validateUrl($url)
     {
         //perform parameter validation
         if (!is_string($url)) {
@@ -838,7 +838,7 @@ class Request
         return $protocol . $query;
     }
 
-    private static function getHeaderString($key, $val)
+    private function getHeaderString($key, $val)
     {
         $key = trim(strtolower($key));
         return $key . ': ' . $val;
@@ -849,7 +849,7 @@ class Request
      * @param array $new_options
      * @return array
      */
-    private static function mergeCurlOptions(&$existing_options, $new_options)
+    private function mergeCurlOptions(&$existing_options, $new_options)
     {
         $existing_options = $new_options + $existing_options;
         return $existing_options;
