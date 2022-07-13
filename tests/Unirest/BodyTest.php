@@ -5,8 +5,6 @@ namespace Unirest\Request\Body\Test;
 use Unirest\Request as Request;
 use Unirest\Request\Body as Body;
 
-require_once __DIR__ . '/../../src/Unirest.php';
-
 class BodyTest extends \PHPUnit\Framework\TestCase
 {
     private $request;

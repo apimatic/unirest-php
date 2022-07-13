@@ -5,8 +5,6 @@ namespace Unirest\Response\Test;
 use Unirest\Request as Request;
 use Unirest\Response as Response;
 
-require __DIR__ . '/../../src/Unirest.php';
-
 class UnirestResponseTest extends \PHPUnit\Framework\TestCase
 {
     private $request;

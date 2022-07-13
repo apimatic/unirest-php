@@ -6,7 +6,6 @@ use Unirest\Request as Request;
 use Unirest\Exception as Exception;
 use Unirest\RequestChild;
 
-require __DIR__ . '/../../src/Unirest.php';
 require __DIR__ . '/RequestChild.php';
 
 class UnirestRequestTest extends \PHPUnit\Framework\TestCase
