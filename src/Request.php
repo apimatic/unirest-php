@@ -465,7 +465,7 @@ class Request
      * @param bool|string $parent parent key or false if no parent
      * @return array
      */
-    public function buildHTTPCurlQuery($data, $parent = false)
+    public static function buildHTTPCurlQuery($data, $parent = false)
     {
         $result = array();
 
@@ -481,7 +481,7 @@ class Request
             }
 
             if (!$value instanceof \CURLFile and (is_array($value) or is_object($value))) {
-                $result = array_merge($result, $this->buildHTTPCurlQuery($value, $new_key));
+                $result = array_merge($result, self::buildHTTPCurlQuery($value, $new_key));
             } else {
                 $result[$new_key] = $value;
             }
@@ -533,11 +533,11 @@ class Request
                 $url .= '?';
             }
 
-            $url .= urldecode(http_build_query($this->buildHTTPCurlQuery($body)));
+            $url .= urldecode(http_build_query(self::buildHTTPCurlQuery($body)));
         }
 
         $curl_base_options = [
-            CURLOPT_URL => $this->validateUrl($url),
+            CURLOPT_URL => self::validateUrl($url),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
@@ -816,7 +816,7 @@ class Request
      * @return string Pre-processed Url as string
      * @throws Exception
      */
-    public function validateUrl($url)
+    public static function validateUrl($url)
     {
         //perform parameter validation
         if (!is_string($url)) {

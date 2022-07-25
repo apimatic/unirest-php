@@ -7,13 +7,6 @@ use Unirest\Exception as Exception;
 
 class Body
 {
-    private $request;
-
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-    }
-
     /**
      * Prepares a file for upload. To be used inside the parameters declaration for a request.
      * @param string $filename The file path
@@ -21,7 +14,7 @@ class Body
      * @param string $postname the file name
      * @return string|\CURLFile
      */
-    public function File($filename, $mimetype = '', $postname = '')
+    public static function File($filename, $mimetype = '', $postname = '')
     {
         if (class_exists('CURLFile')) {
             return new \CURLFile($filename, $mimetype, $postname);
@@ -34,7 +27,7 @@ class Body
         return sprintf('@%s;filename=%s;type=%s', $filename, $postname ?: basename($filename), $mimetype);
     }
 
-    public function Json($data)
+    public static function Json($data)
     {
         if (!function_exists('json_encode')) {
             throw new Exception('JSON Extension not available');
@@ -43,16 +36,16 @@ class Body
         return json_encode($data);
     }
 
-    public function Form($data)
+    public static function Form($data)
     {
         if (is_array($data) || is_object($data) || $data instanceof \Traversable) {
-            return http_build_query($this->request->buildHTTPCurlQuery($data));
+            return http_build_query(Request::buildHTTPCurlQuery($data));
         }
 
         return $data;
     }
 
-    public function Multipart($data, $files = false)
+    public static function Multipart($data, $files = false)
     {
         if (is_object($data)) {
             return get_object_vars($data);
