@@ -43,7 +43,7 @@ class BodyTest extends \PHPUnit\Framework\TestCase
             'file' => $file
         );
 
-        $result = $this->request->buildHTTPCurlQuery($body);
+        $result = Request::buildHTTPCurlQuery($body);
         $this->assertEquals($result['file'], $file);
     }
 

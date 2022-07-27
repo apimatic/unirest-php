@@ -348,9 +348,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testPostForm()
     {
-        $bodyObj = new Request\Body($this->request);
-
-        $body = $bodyObj->Form(array(
+        $body = Request\Body::Form(array(
             'name' => 'Mark',
             'nick' => 'thefosk'
         ));
@@ -368,9 +366,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testPostMultipart()
     {
-        $bodyObj = new Request\Body($this->request);
-
-        $body = $bodyObj->Multipart(array(
+        $body = Request\Body::Multipart(array(
             'name' => 'Mark',
             'nick' => 'thefosk'
         ));
@@ -388,9 +384,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testPostWithEqualSign()
     {
-        $bodyObj = new Request\Body($this->request);
-
-        $body = $bodyObj->Form(array(
+        $body = Request\Body::Form(array(
             'name' => 'Mark=Hello'
         ));
 
@@ -449,9 +443,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testPostMultidimensionalArray()
     {
-        $bodyObj = new Request\Body($this->request);
-
-        $body = $bodyObj->Form(array(
+        $body = Request\Body::Form(array(
             'key' => 'value',
             'items' => array(
                 'item1',
@@ -526,9 +518,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
         $files = array('file' => $fixture);
         $data = array('name' => 'ahmad');
 
-        $bodyObj = new Request\Body($this->request);
-
-        $body = $bodyObj->Multipart($data, $files);
+        $body = Request\Body::Multipart($data, $files);
 
         $response = $this->request->post('http://mockbin.com/request', $headers, $body);
 
@@ -542,13 +532,11 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     {
         $fixture = __DIR__ . '/../fixtures/upload.txt';
 
-        $bodyObj = new Request\Body($this->request);
-
         $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark',
-            'file' => $bodyObj->File($fixture)
+            'file' => Request\Body::File($fixture)
         ));
 
         $this->assertEquals(200, $response->code);
@@ -561,13 +549,11 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     {
         $fixture = __DIR__ . '/../fixtures/upload.txt';
 
-        $bodyObj = new Request\Body($this->request);
-
         $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark',
-            'files[owl.gif]' => $bodyObj->File($fixture)
+            'files[owl.gif]' => Request\Body::File($fixture)
         ));
 
         $this->assertEquals(200, $response->code);
