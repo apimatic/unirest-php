@@ -48,7 +48,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Unirest\\Test": "tests/"
+      "Unirest\\Test\\": "tests/"
     }
   },
   "scripts": {
