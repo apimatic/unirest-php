@@ -48,7 +48,7 @@ composer require apimatic/unirest-php
 You can create a variable at class level and instantiate it with an instance of `Request`, like:
 
 ```php
-private $request = new \Unirest\Request(); 
+private $request = new \Unirest\HttpClient(); 
 ```
 And then you can simply use the publicly exposed methods on that instance.
 

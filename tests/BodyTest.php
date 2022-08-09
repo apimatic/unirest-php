@@ -1,15 +1,16 @@
 <?php
 
-namespace Unirest\Request\Body\Test;
+namespace Unirest\Test;
 
-use Unirest\Request as Request;
-use Unirest\Request\Body as Body;
+use PHPUnit\Framework\TestCase;
+use Unirest\Request\Body;
+use Unirest\Request\Request;
 
-class BodyTest extends \PHPUnit\Framework\TestCase
+class BodyTest extends TestCase
 {
     public function testCURLFile()
     {
-        $fixture = __DIR__ . '/fixtures/upload.txt';
+        $fixture = __DIR__ . '/Mocking/upload.txt';
 
         $file = Body::File($fixture);
 
@@ -22,7 +23,7 @@ class BodyTest extends \PHPUnit\Framework\TestCase
 
     public function testHttpBuildQueryWithCurlFile()
     {
-        $fixture = __DIR__ . '/fixtures/upload.txt';
+        $fixture = __DIR__ . '/Mocking/upload.txt';
 
         $file = Body::File($fixture);
         $body = array(
@@ -69,7 +70,7 @@ class BodyTest extends \PHPUnit\Framework\TestCase
 
     public function testMultipartFiles()
     {
-        $fixture = __DIR__ . '/fixtures/upload.txt';
+        $fixture = __DIR__ . '/Mocking/upload.txt';
 
         $data = array('foo' => 'bar', 'bar' => 'baz');
         $files = array('test' => $fixture);

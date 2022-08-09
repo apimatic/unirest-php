@@ -1,21 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unirest;
 
-class Response
+use CoreDesign\Core\Response\ResponseInterface;
+use CoreDesign\Sdk\ConverterInterface;
+
+class Response implements ResponseInterface
 {
-    public $code;
-    public $raw_body;
-    public $body;
-    public $headers;
+    private $code;
+    private $raw_body;
+    private $body;
+    private $headers;
 
     /**
-     * @param int    $code      response code of the cURL request
+     * @param int $code      response code of the cURL request
      * @param string $raw_body  the raw body of the cURL response
-     * @param array  $headers   parsed headers array from cURL response
-     * @param array  $json_args arguments to pass to json_decode function
+     * @param array $headers   parsed headers array from cURL response
+     * @param array $json_args arguments to pass to json_decode function
      */
-    public function __construct($code, $raw_body, $headers, $json_args = array())
+    public function __construct(int $code, string $raw_body, array $headers, array $json_args = [])
     {
         $this->code     = $code;
         $this->headers  = $headers;
@@ -32,5 +37,30 @@ class Response
                 $this->body = $json;
             }
         }
+    }
+
+    public function getStatusCode(): int
+    {
+        return $this->code;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    public function getRawBody(): string
+    {
+        return $this->raw_body;
+    }
+
+    public function getBody()
+    {
+        return $this->body;
+    }
+
+    public function convert(ConverterInterface $converter)
+    {
+        return $converter->createHttpResponse($this);
     }
 }
