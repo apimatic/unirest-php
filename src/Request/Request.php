@@ -104,6 +104,16 @@ class Request implements RequestInterface
         return [];
     }
 
+    public function getEncodedParameters(): array
+    {
+        return [];
+    }
+
+    public function getMultipartParameters(): array
+    {
+        return [];
+    }
+
     public function getBody()
     {
         return $this->body;

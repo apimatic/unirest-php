@@ -103,9 +103,47 @@ class HttpClient implements HttpClientInterface
         $this->totalNumberOfConnections = 0;
     }
 
+    protected function getBody(RequestInterface $request)
+    {
+        if (empty($request->getParameters())) {
+            return $request->getBody();
+        }
+        // special handling for form parameters i.e.
+        // returning flatten array with encoded keys if any multipart parameter exists
+        // OR returning concatenated encoded parameters string
+        $encodedBody = join('&', $request->getEncodedParameters());
+        $multipartParameters = $request->getMultipartParameters();
+        if (empty($multipartParameters)) {
+            return $encodedBody;
+        }
+        if (empty($encodedBody)) {
+            return $multipartParameters;
+        }
+        foreach (explode('&', $encodedBody) as $param) {
+            $keyValue = explode('=', $param);
+            $multipartParameters[urldecode($keyValue[0])] = urldecode($keyValue[1]);
+        }
+        return $multipartParameters;
+    }
+
+    protected function getHeaders(RequestInterface $request): array
+    {
+        $headers = $request->getHeaders();
+        if (empty($request->getParameters())) {
+            return $headers;
+        }
+        $headers = array_change_key_case($headers);
+        // special handling for form parameters i.e. removing content-type header
+        if (array_key_exists('content-type', $headers)) {
+            unset($headers['content-type']);
+        }
+        return $headers;
+    }
+
     protected function setCurlOptions($handle, RequestInterface $request): void
     {
         $queryUrl = $request->getQueryUrl();
+        $body = $this->getBody($request);
         if ($request->getHttpMethod() !== RequestMethod::GET) {
             if ($request->getHttpMethod() === RequestMethod::POST) {
                 curl_setopt($handle, CURLOPT_POST, true);
@@ -115,22 +153,22 @@ class HttpClient implements HttpClientInterface
                 }
                 curl_setopt($handle, CURLOPT_CUSTOMREQUEST, strtoupper($request->getHttpMethod()));
             }
-            curl_setopt($handle, CURLOPT_POSTFIELDS, $request->getBody());
-        } elseif (is_array($request->getBody())) {
+            curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+        } elseif (is_array($body)) {
             if (strpos($queryUrl, '?') !== false) {
                 $queryUrl .= '&';
             } else {
                 $queryUrl .= '?';
             }
-            $queryUrl .= urldecode(http_build_query(Request::buildHTTPCurlQuery($request->getBody())));
+            $queryUrl .= urldecode(http_build_query(Request::buildHTTPCurlQuery($body)));
         }
-
+        $headers = $this->getHeaders($request);
         $curl_base_options = [
             CURLOPT_URL => $queryUrl,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($request->getHeaders()),
+            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($headers),
             CURLOPT_HEADER => true,
             CURLOPT_SSL_VERIFYPEER => $this->config->shouldVerifyPeer(),
             // CURLOPT_SSL_VERIFYHOST accepts only 0 (false) or 2 (true). Future versions of libcurl
