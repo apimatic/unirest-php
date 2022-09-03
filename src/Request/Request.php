@@ -45,14 +45,27 @@ class Request implements RequestInterface
     private $queryUrl;
     private $headers;
     private $body;
-    private $retryOption = RetryOption::USE_GLOBAL_SETTINGS;
+    private $retryOption;
 
-    public function __construct(string $url, string $method = RequestMethod::GET, array $headers = [], $body = null)
-    {
+    /**
+     * @param string $url         Query url
+     * @param string $method      Http method
+     * @param array  $headers     Http request headers
+     * @param mixed  $body        Http request body
+     * @param string $retryOption To enable/disable httpMethods whitelist while retrying Api call
+     */
+    public function __construct(
+        string $url,
+        string $method = RequestMethod::GET,
+        array $headers = [],
+        $body = null,
+        string $retryOption = RetryOption::USE_GLOBAL_SETTINGS
+    ) {
         $this->queryUrl = $this->validateUrl($url);
         $this->httpMethod = $method;
         $this->headers = $headers;
         $this->body = $body;
+        $this->retryOption = $retryOption;
     }
 
     /**
@@ -77,11 +90,6 @@ class Request implements RequestInterface
 
         //return process url
         return $protocol . $query;
-    }
-
-    public function setRetryOption(string $retryOption): void
-    {
-        $this->retryOption = $retryOption;
     }
 
     public function getHttpMethod(): string
@@ -124,12 +132,12 @@ class Request implements RequestInterface
         return $this->retryOption;
     }
 
-    public function convert()
+    public function convert(): Request
     {
         return $this;
     }
 
-    public function toApiException(string $message)
+    public function toApiException(string $message): Exception
     {
         return new Exception($message);
     }

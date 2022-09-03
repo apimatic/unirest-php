@@ -126,20 +126,6 @@ class HttpClient implements HttpClientInterface
         return $multipartParameters;
     }
 
-    protected function getHeaders(RequestInterface $request): array
-    {
-        $headers = $request->getHeaders();
-        if (empty($request->getParameters())) {
-            return $headers;
-        }
-        $headers = array_change_key_case($headers);
-        // special handling for form parameters i.e. removing content-type header
-        if (array_key_exists('content-type', $headers)) {
-            unset($headers['content-type']);
-        }
-        return $headers;
-    }
-
     protected function setCurlOptions($handle, RequestInterface $request): void
     {
         $queryUrl = $request->getQueryUrl();
@@ -162,13 +148,12 @@ class HttpClient implements HttpClientInterface
             }
             $queryUrl .= urldecode(http_build_query(Request::buildHTTPCurlQuery($body)));
         }
-        $headers = $this->getHeaders($request);
         $curl_base_options = [
             CURLOPT_URL => $queryUrl,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($headers),
+            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($request),
             CURLOPT_HEADER => true,
             CURLOPT_SSL_VERIFYPEER => $this->config->shouldVerifyPeer(),
             // CURLOPT_SSL_VERIFYHOST accepts only 0 (false) or 2 (true). Future versions of libcurl
@@ -251,11 +236,11 @@ class HttpClient implements HttpClientInterface
     /**
      * Generate calculated wait time, and 0.0 if api should not be retried
      *
-     * @param $httpCode        int           Http status code in response
-     * @param $headers         array         Response headers
-     * @param $error           string        Error returned by server
-     * @param $allowedWaitTime int           Remaining allowed wait time
-     * @param $retryCount      int           Attempt number
+     * @param $httpCode        int    Http status code in response
+     * @param $headers         array  Response headers
+     * @param $error           string Error returned by server
+     * @param $allowedWaitTime int    Remaining allowed wait time
+     * @param $retryCount      int    Attempt number
      * @return float  Wait time before sending the next apiCall
      */
     protected function getRetryWaitTime(
@@ -295,10 +280,10 @@ class HttpClient implements HttpClientInterface
     }
 
     /**
-     * Returns the number of seconds by extracting them from $retry-after header
+     * Returns the number of seconds by extracting them from $retry-after parameter
      *
-     * @param $retry_after mixed could be some numeric value in seconds, or it could be RFC1123
-     *                     formatted datetime string
+     * @param $retry_after int|string Some numeric value in seconds, or it could be RFC1123
+     *                                formatted datetime string
      * @return int Number of seconds specified by retry-after param
      */
     protected function getRetryAfterInSeconds($retry_after): int
@@ -358,42 +343,29 @@ class HttpClient implements HttpClientInterface
         }
     }
 
-    public function getInfo($opt = false)
+    public function getInfo(?int $option = null)
     {
-        if ($opt) {
-            $info = curl_getinfo($this->handle, $opt);
-        } else {
-            $info = curl_getinfo($this->handle);
-        }
-
-        return $info;
+        return curl_getinfo($this->handle, $option);
     }
 
-    protected function getFormattedHeaders(array $headers): array
+    protected function getFormattedHeaders(RequestInterface $request): array
     {
-        $formattedHeaders = array();
-
-        $combinedHeaders = array_change_key_case(array_merge($this->config->getDefaultHeaders(), $headers));
-
+        $combinedHeaders = array_change_key_case(array_merge(
+            ['user-agent' => 'unirest-php/4.0', 'expect' => ''],
+            $this->config->getDefaultHeaders(),
+            $request->getHeaders()
+        ));
+        $formattedHeaders = [];
         foreach ($combinedHeaders as $key => $val) {
-            $formattedHeaders[] = $this->getHeaderString($key, $val);
+            $key = trim($key);
+            if (!empty($request->getParameters()) && $key == 'content-type') {
+                // special handling for form parameters i.e. removing content-type header
+                // As, Curl will automatically add content-type for form params
+                continue;
+            }
+            $formattedHeaders[] = "$key: $val";
         }
-
-        if (!array_key_exists('user-agent', $combinedHeaders)) {
-            $formattedHeaders[] = 'user-agent: unirest-php/2.0';
-        }
-
-        if (!array_key_exists('expect', $combinedHeaders)) {
-            $formattedHeaders[] = 'expect:';
-        }
-
         return $formattedHeaders;
-    }
-
-    private function getHeaderString(string $key, $val): string
-    {
-        $key = trim(strtolower($key));
-        return $key . ': ' . $val;
     }
 
     private function mergeCurlOptions(array &$existing_options, array $new_options): array
