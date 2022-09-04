@@ -345,6 +345,9 @@ class HttpClient implements HttpClientInterface
 
     public function getInfo(?int $option = null)
     {
+        if (is_null($option)) {
+            return curl_getinfo($this->handle);
+        }
         return curl_getinfo($this->handle, $option);
     }
 
