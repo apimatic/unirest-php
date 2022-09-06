@@ -39,6 +39,7 @@
   },
   "require-dev": {
       "squizlabs/php_codesniffer": "^3.5",
+      "phan/phan": "5.3.1",
       "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5"
   },
   "autoload": {
@@ -53,7 +54,11 @@
   },
   "scripts": {
     "test": "phpunit",
-    "test-coverage": "phpunit --coverage-html=coverage"
+    "test-coverage": "phpunit --coverage-html=coverage",
+    "test-coverage-text": "phpunit --coverage-text",
+    "lint": "phpcs --standard=phpcs-ruleset.xml src/",
+    "lint-fix": "phpcbf --standard=phpcs-ruleset.xml src/",
+    "analyze": "phan --allow-polyfill-parser"
   },
   "support": {
     "email": "opensource@apimatic.io"

@@ -216,10 +216,10 @@ class RequestTest extends TestCase
             'Accept' => 'application/json'
         ], [
             'key' => 'value',
-            'items' => array(
+            'items' => [
                 'item1',
                 'item2'
-            )
+            ]
         ]));
 
         $this->assertEquals(200, $response->getStatusCode());
@@ -232,12 +232,12 @@ class RequestTest extends TestCase
     public function testGetWithDots()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'user.name' => 'Mark',
             'nick' => 'thefosk'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
@@ -248,12 +248,12 @@ class RequestTest extends TestCase
     public function testGetWithDotsAlt()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'user.name' => 'Mark Bond',
             'nick' => 'thefosk'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
@@ -263,11 +263,11 @@ class RequestTest extends TestCase
     public function testGetWithEqualSign()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'name' => 'Mark=Hello'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
@@ -277,11 +277,11 @@ class RequestTest extends TestCase
     public function testGetWithEqualSignAlt()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'name' => 'Mark=Hello=John'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
@@ -328,12 +328,12 @@ class RequestTest extends TestCase
     public function testPost()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'name' => 'Mark',
             'nick' => 'thefosk'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);
@@ -344,14 +344,14 @@ class RequestTest extends TestCase
     public function testPostForm()
     {
         $httpClient = new HttpClient();
-        $body = Body::Form(array(
+        $body = Body::Form([
             'name' => 'Mark',
             'nick' => 'thefosk'
-        ));
+        ]);
 
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json'
-        ), $body));
+        ], $body));
 
         $this->assertEquals('POST', $response->getBody()->method);
         $this->assertEquals('application/x-www-form-urlencoded', $response->getBody()->headers->{'content-type'});
@@ -363,14 +363,14 @@ class RequestTest extends TestCase
     public function testPostMultipart()
     {
         $httpClient = new HttpClient();
-        $body = Body::Multipart(array(
+        $body = Body::Multipart([
             'name' => 'Mark',
             'nick' => 'thefosk'
-        ));
+        ]);
 
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json',
-        ), $body));
+        ], $body));
 
         $this->assertEquals('POST', $response->getBody()->method);
         $this->assertEquals('multipart/form-data', explode(';', $response->getBody()->headers->{'content-type'})[0]);
@@ -382,13 +382,13 @@ class RequestTest extends TestCase
     public function testPostWithEqualSign()
     {
         $httpClient = new HttpClient();
-        $body = Body::Form(array(
+        $body = Body::Form([
             'name' => 'Mark=Hello'
-        ));
+        ]);
 
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json'
-        ), $body));
+        ], $body));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);
@@ -398,12 +398,12 @@ class RequestTest extends TestCase
     public function testPostArray()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'name[0]' => 'Mark',
             'name[1]' => 'John'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);
@@ -414,12 +414,12 @@ class RequestTest extends TestCase
     public function testPostWithDots()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'user.name' => 'Mark',
             'nick' => 'thefosk'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);
@@ -430,12 +430,12 @@ class RequestTest extends TestCase
     public function testRawPost()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json'
-        ), json_encode(array(
+        ], json_encode([
             'author' => 'Sam Sullivan'
-        ))));
+        ])));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);
@@ -445,17 +445,17 @@ class RequestTest extends TestCase
     public function testPostMultidimensionalArray()
     {
         $httpClient = new HttpClient();
-        $body = Body::Form(array(
+        $body = Body::Form([
             'key' => 'value',
-            'items' => array(
+            'items' => [
                 'item1',
                 'item2'
-            )
-        ));
+            ]
+        ]);
 
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json'
-        ), $body));
+        ], $body));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);
@@ -468,12 +468,12 @@ class RequestTest extends TestCase
     public function testPut()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::PUT, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::PUT, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'name' => 'Mark',
             'nick' => 'thefosk'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('PUT', $response->getBody()->method);
@@ -485,12 +485,12 @@ class RequestTest extends TestCase
     public function testPatch()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::PATCH, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::PATCH, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'name' => 'Mark',
             'nick' => 'thefosk'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('PATCH', $response->getBody()->method);
@@ -502,13 +502,13 @@ class RequestTest extends TestCase
     public function testDelete()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::DELETE, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::DELETE, [
             'Accept' => 'application/json',
             'Content-Type' => 'application/x-www-form-urlencoded'
-        ), array(
+        ], [
             'name' => 'Mark',
             'nick' => 'thefosk'
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('DELETE', $response->getBody()->method);
@@ -520,9 +520,9 @@ class RequestTest extends TestCase
         $httpClient = new HttpClient();
         $fixture = __DIR__ . '/Mocking/upload.txt';
 
-        $headers = array('Accept' => 'application/json');
-        $files = array('file' => $fixture);
-        $data = array('name' => 'ahmad');
+        $headers = ['Accept' => 'application/json'];
+        $files = ['file' => $fixture];
+        $data = ['name' => 'ahmad'];
 
         $body = Body::multipart($data, $files);
 
@@ -539,12 +539,12 @@ class RequestTest extends TestCase
         $httpClient = new HttpClient();
         $fixture = __DIR__ . '/Mocking/upload.txt';
 
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'name' => 'Mark',
             'file' => Body::File($fixture)
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);
@@ -557,12 +557,12 @@ class RequestTest extends TestCase
         $httpClient = new HttpClient();
         $fixture = __DIR__ . '/Mocking/upload.txt';
 
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, array(
+        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, [
             'Accept' => 'application/json'
-        ), array(
+        ], [
             'name' => 'Mark',
             'files[owl.gif]' => Body::File($fixture)
-        )));
+        ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);

@@ -15,18 +15,17 @@ class Request implements RequestInterface
      * the 'Array to string conversion' notice
      * @param array|object $data array to flatten.
      * @param bool|string $parent parent key or false if no parent
-     * @return array
      */
     public static function buildHTTPCurlQuery($data, $parent = false): array
     {
-        $result = array();
+        $result = [];
 
         if (is_object($data)) {
             $data = get_object_vars($data);
         }
 
         foreach ($data as $key => $value) {
-            if ($parent) {
+            if (!empty($parent)) {
                 $new_key = sprintf('%s[%s]', $parent, $key);
             } else {
                 $new_key = $key;

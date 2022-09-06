@@ -16,8 +16,8 @@ class Configuration implements HttpConfigurations
      * @var string|null
      */
     private $cookieFile;
-    private $curlOpts = array();
-    private $jsonOpts = array();
+    private $curlOpts = [];
+    private $jsonOpts = [];
     private $socketTimeout = 0;
     private $enableRetries = false;       // should we enable retries feature
     private $maxNumberOfRetries = 3;      // total number of allowed retries
@@ -25,42 +25,44 @@ class Configuration implements HttpConfigurations
     private $retryInterval = 1.0;         // Initial retry interval in seconds, to be increased by backoffFactor
     private $maximumRetryWaitTime = 120;  // maximum retry wait time (commutative)
     private $backoffFactor = 2.0;         // backoff factor to be used to increase retry interval
-    private $httpStatusCodesToRetry = array(408, 413, 429, 500, 502, 503, 504, 521, 522, 524);
-    private $httpMethodsToRetry = array("GET", "PUT");
+    private $httpStatusCodesToRetry = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524];
+    private $httpMethodsToRetry = ["GET", "PUT"];
     private $verifyPeer = true;
     private $verifyHost = true;
-    private $defaultHeaders = array();
+    private $defaultHeaders = [];
 
-    private $auth = array (
+    private $auth =  [
         'user' => '',
         'pass' => '',
         'method' => CURLAUTH_BASIC
-    );
+    ];
 
-    private $proxy = array(
+    private $proxy = [
         'port' => false,
         'tunnel' => false,
         'address' => false,
         'type' => CURLPROXY_HTTP,
-        'auth' => array (
+        'auth' =>  [
             'user' => '',
             'pass' => '',
             'method' => CURLAUTH_BASIC
-        )
-    );
+        ]
+    ];
 
     public static function init(): self
     {
         return new self();
     }
 
+    /**
+     * @phan-suppress PhanEmptyPrivateMethod
+     */
     private function __construct()
     {
     }
 
     /**
      * @param int $socketTimeout Timeout for API calls in seconds.
-     * @return Configuration
      */
     public function timeout(int $socketTimeout): self
     {
@@ -70,7 +72,6 @@ class Configuration implements HttpConfigurations
 
     /**
      * @param bool $enableRetries Whether to enable retries and backoff feature.
-     * @return Configuration
      */
     public function enableRetries(bool $enableRetries): self
     {
@@ -80,7 +81,6 @@ class Configuration implements HttpConfigurations
 
     /**
      * @param int $maxNumberOfRetries The number of retries to make.
-     * @return Configuration
      */
     public function maxNumberOfRetries(int $maxNumberOfRetries): self
     {
@@ -90,7 +90,6 @@ class Configuration implements HttpConfigurations
 
     /**
      * @param bool $retryOnTimeout Whether to retry on timeout
-     * @return Configuration
      */
     public function retryOnTimeout(bool $retryOnTimeout): self
     {
@@ -100,7 +99,6 @@ class Configuration implements HttpConfigurations
 
     /**
      * @param float $retryInterval The retry time interval between the endpoint calls.
-     * @return Configuration
      */
     public function retryInterval(float $retryInterval): self
     {
@@ -110,7 +108,6 @@ class Configuration implements HttpConfigurations
 
     /**
      * @param int $maximumRetryWaitTime The maximum wait time in seconds for overall retrying requests.
-     * @return Configuration
      */
     public function maximumRetryWaitTime(int $maximumRetryWaitTime): self
     {
@@ -120,7 +117,6 @@ class Configuration implements HttpConfigurations
 
     /**
      * @param float $backoffFactor Exponential backoff factor to increase interval between retries.
-     * @return Configuration
      */
     public function backoffFactor(float $backoffFactor): self
     {
@@ -130,7 +126,6 @@ class Configuration implements HttpConfigurations
 
     /**
      * @param int[] $httpStatusCodesToRetry Http status codes to retry against.
-     * @return Configuration
      */
     public function httpStatusCodesToRetry(array $httpStatusCodesToRetry): self
     {
@@ -140,7 +135,6 @@ class Configuration implements HttpConfigurations
 
     /**
      * @param string[] $httpMethodsToRetry Http methods to retry against.
-     * @return Configuration
      */
     public function httpMethodsToRetry(array $httpMethodsToRetry): self
     {
@@ -155,11 +149,10 @@ class Configuration implements HttpConfigurations
      * @param int $depth User specified recursion depth.
      * @param int $options Bitmask of JSON decode options. Currently only JSON_BIGINT_AS_STRING is supported
      *                     (default is to cast large integers as floats)
-     * @return Configuration
      */
     public function jsonOpts(bool $assoc = false, int $depth = 512, int $options = 0): self
     {
-        $this->jsonOpts = array($assoc, $depth, $options);
+        $this->jsonOpts = [$assoc, $depth, $options];
         return $this;
     }
 
@@ -167,7 +160,6 @@ class Configuration implements HttpConfigurations
      * Verify SSL peer
      *
      * @param bool $enabled enable SSL verification, by default is true
-     * @return Configuration
      */
     public function verifyPeer(bool $enabled): self
     {
@@ -179,7 +171,6 @@ class Configuration implements HttpConfigurations
      * Verify SSL host
      *
      * @param bool $enabled enable SSL host verification, by default is true
-     * @return Configuration
      */
     public function verifyHost(bool $enabled): self
     {
@@ -191,7 +182,6 @@ class Configuration implements HttpConfigurations
      * Set default headers to send on every request
      *
      * @param array $headers headers array
-     * @return Configuration
      */
     public function defaultHeaders(array $headers): self
     {
@@ -204,7 +194,6 @@ class Configuration implements HttpConfigurations
      *
      * @param string $name header name
      * @param string $value header value
-     * @return Configuration
      */
     public function defaultHeader(string $name, string $value): self
     {
@@ -216,7 +205,6 @@ class Configuration implements HttpConfigurations
      * Set curl options to send on every request
      *
      * @param array $options options array
-     * @return Configuration
      */
     public function curlOpts(array $options): self
     {
@@ -227,11 +215,10 @@ class Configuration implements HttpConfigurations
     /**
      * Set a new default header to send on every request
      *
-     * @param string $name header name
+     * @param string|int $name header name
      * @param string $value header value
-     * @return Configuration
      */
-    public function curlOpt(string $name, string $value): self
+    public function curlOpt($name, string $value): self
     {
         $this->curlOpts[$name] = $value;
         return $this;
@@ -241,7 +228,6 @@ class Configuration implements HttpConfigurations
      * Set a cookie string for enabling cookie handling
      *
      * @param string $cookie
-     * @return Configuration
      */
     public function cookie(string $cookie): self
     {
@@ -255,7 +241,6 @@ class Configuration implements HttpConfigurations
      * $cookieFile must be a correct path with write permission
      *
      * @param string $cookieFile - path to file for saving cookie
-     * @return Configuration
      */
     public function cookieFile(string $cookieFile): self
     {
@@ -269,7 +254,6 @@ class Configuration implements HttpConfigurations
      * @param string $username authentication username
      * @param string $password authentication password
      * @param integer $method authentication method
-     * @return Configuration
      */
     public function auth(string $username = '', string $password = '', int $method = CURLAUTH_BASIC): self
     {
@@ -287,7 +271,6 @@ class Configuration implements HttpConfigurations
      * @param integer $type (Available options for this are CURLPROXY_HTTP, CURLPROXY_HTTP_1_0 CURLPROXY_SOCKS4,
      *                      CURLPROXY_SOCKS5, CURLPROXY_SOCKS4A and CURLPROXY_SOCKS5_HOSTNAME)
      * @param bool $tunnel enable/disable tunneling
-     * @return Configuration
      */
     public function proxy(string $address, int $port = 1080, int $type = CURLPROXY_HTTP, bool $tunnel = false): self
     {
@@ -304,7 +287,6 @@ class Configuration implements HttpConfigurations
      * @param string $username authentication username
      * @param string $password authentication password
      * @param integer $method authentication method
-     * @return Configuration
      */
     public function proxyAuth(string $username = '', string $password = '', int $method = CURLAUTH_BASIC): self
     {

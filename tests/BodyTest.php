@@ -26,11 +26,11 @@ class BodyTest extends TestCase
         $fixture = __DIR__ . '/Mocking/upload.txt';
 
         $file = Body::File($fixture);
-        $body = array(
+        $body = [
             'to' => 'mail@mailinator.com',
             'from' => 'mail@mailinator.com',
             'file' => $file
-        );
+        ];
 
         $result = Request::buildHTTPCurlQuery($body);
         $this->assertEquals($result['file'], $file);
@@ -38,14 +38,14 @@ class BodyTest extends TestCase
 
     public function testJson()
     {
-        $body = Body::Json(array('foo', 'bar'));
+        $body = Body::Json(['foo', 'bar']);
 
         $this->assertEquals($body, '["foo","bar"]');
     }
 
     public function testForm()
     {
-        $body = Body::Form(array('foo' => 'bar', 'bar' => 'baz'));
+        $body = Body::Form(['foo' => 'bar', 'bar' => 'baz']);
 
         $this->assertEquals($body, 'foo=bar&bar=baz');
 
@@ -57,7 +57,7 @@ class BodyTest extends TestCase
 
     public function testMultipart()
     {
-        $arr = array('foo' => 'bar', 'bar' => 'baz');
+        $arr = ['foo' => 'bar', 'bar' => 'baz'];
 
         $body = Body::Multipart((object) $arr);
 
@@ -65,24 +65,24 @@ class BodyTest extends TestCase
 
         $body = Body::Multipart('flat');
 
-        $this->assertEquals($body, array('flat'));
+        $this->assertEquals($body, ['flat']);
     }
 
     public function testMultipartFiles()
     {
         $fixture = __DIR__ . '/Mocking/upload.txt';
 
-        $data = array('foo' => 'bar', 'bar' => 'baz');
-        $files = array('test' => $fixture);
+        $data = ['foo' => 'bar', 'bar' => 'baz'];
+        $files = ['test' => $fixture];
 
         $body = Body::Multipart($data, $files);
 
         // echo $body;
 
-        $this->assertEquals($body, array(
+        $this->assertEquals($body, [
             'foo' => 'bar',
             'bar' => 'baz',
             'test' => Body::File($fixture)
-        ));
+        ]);
     }
 }

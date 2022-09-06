@@ -60,7 +60,7 @@ class HttpClient implements HttpClientInterface
         $waitTime        = 0.0;  // wait time in secs before current api call
         $allowedWaitTime = $this->config->getMaximumRetryWaitTime(); // remaining allowed wait time in seconds
         $httpCode        = null;
-        $headers         = array();
+        $headers         = [];
         do {
             // If Retrying i.e. retryCount >= 1
             if ($retryCount > 0) {
@@ -75,7 +75,7 @@ class HttpClient implements HttpClientInterface
             $info      = $this->getInfo();
             if (empty($error)) {
                 $header_size = $info['header_size'];
-                $httpCode    = $info['http_code'];
+                $httpCode    = (int)$info['http_code'];
                 $headers     = $this->parseHeaders(substr($response, 0, $header_size));
             }
 
@@ -179,22 +179,22 @@ class HttpClient implements HttpClientInterface
         }
 
         if (!empty($this->config->getAuth()['user'])) {
-            curl_setopt_array($handle, array(
+            curl_setopt_array($handle, [
                 CURLOPT_HTTPAUTH    => $this->config->getAuth()['method'],
                 CURLOPT_USERPWD     => $this->config->getAuth()['user'] . ':' . $this->config->getAuth()['pass']
-            ));
+            ]);
         }
 
         if ($this->config->getProxy()['address'] !== false) {
             $proxy = $this->config->getProxy();
-            curl_setopt_array($handle, array(
+            curl_setopt_array($handle, [
                 CURLOPT_PROXYTYPE       => $proxy['type'],
                 CURLOPT_PROXY           => $proxy['address'],
                 CURLOPT_PROXYPORT       => $proxy['port'],
                 CURLOPT_HTTPPROXYTUNNEL => $proxy['tunnel'],
                 CURLOPT_PROXYAUTH       => $proxy['auth']['method'],
                 CURLOPT_PROXYUSERPWD    => $proxy['auth']['user'] . ':' . $proxy['auth']['pass']
-            ));
+            ]);
         }
     }
 
@@ -215,9 +215,6 @@ class HttpClient implements HttpClientInterface
     /**
      * Check if retries are enabled at global and request level,
      * also check whitelisted httpMethods, if retries are only enabled globally.
-     *
-     * @param RequestInterface $request
-     * @return bool
      */
     protected function shouldRetryRequest(RequestInterface $request): bool
     {
@@ -226,7 +223,7 @@ class HttpClient implements HttpClientInterface
                 return $this->config->shouldEnableRetries();
             case RetryOption::USE_GLOBAL_SETTINGS:
                 return $this->config->shouldEnableRetries()
-                    && in_array($request->getHttpMethod(), $this->config->getHttpMethodsToRetry());
+                    && in_array($request->getHttpMethod(), $this->config->getHttpMethodsToRetry(), true);
             case RetryOption::DISABLE_RETRY:
                 return false;
         }
@@ -244,7 +241,7 @@ class HttpClient implements HttpClientInterface
      * @return float  Wait time before sending the next apiCall
      */
     protected function getRetryWaitTime(
-        int $httpCode,
+        ?int $httpCode,
         array $headers,
         string $error,
         int $allowedWaitTime,
@@ -258,7 +255,8 @@ class HttpClient implements HttpClientInterface
             $retry_after_val = key_exists('retry-after', $headers_lower_keys) ?
                 $headers_lower_keys['retry-after'] : null;
             $retry_after = $this->getRetryAfterInSeconds($retry_after_val);
-            $retry       = isset($retry_after_val) || in_array($httpCode, $this->config->getHttpStatusCodesToRetry());
+            $retry       = isset($retry_after_val)
+                || in_array($httpCode, $this->config->getHttpStatusCodesToRetry(), true);
         } else {
             $retry = $this->config->shouldRetryOnTimeout() && curl_errno($this->handle) == CURLE_OPERATION_TIMEDOUT;
         }
@@ -306,8 +304,6 @@ class HttpClient implements HttpClientInterface
      *
      * thanks to ricardovermeltfoort@gmail.com
      * http://php.net/manual/en/function.http-parse-headers.php#112986
-     * @param string $raw_headers raw headers
-     * @return array
      */
     private function parseHeaders(string $raw_headers): array
     {
@@ -315,7 +311,7 @@ class HttpClient implements HttpClientInterface
             return http_parse_headers($raw_headers);
         } else {
             $key = '';
-            $headers = array();
+            $headers = [];
 
             foreach (explode("\n", $raw_headers) as $i => $h) {
                 $h = explode(':', $h, 2);
@@ -324,16 +320,16 @@ class HttpClient implements HttpClientInterface
                     if (!isset($headers[$h[0]])) {
                         $headers[$h[0]] = trim($h[1]);
                     } elseif (is_array($headers[$h[0]])) {
-                        $headers[$h[0]] = array_merge($headers[$h[0]], array(trim($h[1])));
+                        $headers[$h[0]] = array_merge($headers[$h[0]], [trim($h[1])]);
                     } else {
-                        $headers[$h[0]] = array_merge(array($headers[$h[0]]), array(trim($h[1])));
+                        $headers[$h[0]] = array_merge([$headers[$h[0]]], [trim($h[1])]);
                     }
 
                     $key = $h[0];
                 } else {
                     if (substr($h[0], 0, 1) == "\t") {
-                        $headers[$key] .= "\r\n\t".trim($h[0]);
-                    } elseif (!$key) {
+                        $headers[$key] .= "\r\n\t" . trim($h[0]);
+                    } elseif (empty($key)) {
                         $headers[0] = trim($h[0]);
                     }
                 }

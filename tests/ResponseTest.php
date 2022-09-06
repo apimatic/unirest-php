@@ -7,7 +7,6 @@ use Unirest\Response as Response;
 
 class ResponseTest extends TestCase
 {
-
     public function testJSONAssociativeArrays()
     {
         $response = new Response(200, '{"a":1,"b":2,"c":3,"d":4,"e":5}', [], [true]);
