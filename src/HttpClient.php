@@ -8,7 +8,6 @@ use CoreDesign\Core\Request\RequestInterface;
 use CoreDesign\Core\Request\RequestMethod;
 use CoreDesign\Core\Response\ResponseInterface;
 use CoreDesign\Http\HttpClientInterface;
-use CoreDesign\Http\HttpConfigurations;
 use CoreDesign\Http\RetryOption;
 use DateTime;
 use Unirest\Request\Request;
@@ -24,28 +23,11 @@ class HttpClient implements HttpClientInterface
     protected $config;
 
     /**
-     * @param HttpConfigurations|null $configurations
+     * @param Configuration|null $configurations
      */
-    public function __construct(?HttpConfigurations $configurations = null)
+    public function __construct(?Configuration $configurations = null)
     {
-        if ($configurations instanceof Configuration) {
-            $this->config = $configurations;
-            return;
-        }
-        $this->config = Configuration::init();
-        if (is_null($configurations)) {
-            return;
-        }
-        $this->config = $this->config
-            ->timeout($configurations->getTimeout())
-            ->enableRetries($configurations->shouldEnableRetries())
-            ->maxNumberOfRetries($configurations->getNumberOfRetries())
-            ->retryOnTimeout($configurations->shouldRetryOnTimeout())
-            ->retryInterval($configurations->getRetryInterval())
-            ->maximumRetryWaitTime($configurations->getMaximumRetryWaitTime())
-            ->backoffFactor($configurations->getBackOffFactor())
-            ->httpStatusCodesToRetry($configurations->getHttpStatusCodesToRetry())
-            ->httpMethodsToRetry($configurations->getHttpMethodsToRetry());
+        $this->config = $configurations ?? Configuration::init();
     }
 
     public function execute(RequestInterface $request): ResponseInterface

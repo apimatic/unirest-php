@@ -57,7 +57,9 @@
     "test-coverage": "phpunit --coverage-html=coverage",
     "test-coverage-text": "phpunit --coverage-text",
     "lint": "phpcs --standard=phpcs-ruleset.xml src/",
+    "lint-test": "phpcs --standard=phpcs-ruleset.xml tests/",
     "lint-fix": "phpcbf --standard=phpcs-ruleset.xml src/",
+    "lint-fix-test": "phpcbf --standard=phpcs-ruleset.xml tests/",
     "analyze": "phan --allow-polyfill-parser"
   },
   "support": {

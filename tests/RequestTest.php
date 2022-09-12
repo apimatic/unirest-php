@@ -291,12 +291,18 @@ class RequestTest extends TestCase
     public function testGetWithComplexQuery()
     {
         $httpClient = new HttpClient();
-        $response = $httpClient->execute(new Request('http://mockbin.com/request?query=[{"type":"/music/album","name":null,"artist":{"id":"/en/bob_dylan"},"limit":3}]&cursor'));
+        $response = $httpClient->execute(new Request(
+            'http://mockbin.com/request?query=[{"type":"/music/album","name":null,"artist":' .
+            '{"id":"/en/bob_dylan"},"limit":3}]&cursor'
+        ));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
         $this->assertEquals('', $response->getBody()->queryString->cursor);
-        $this->assertEquals('[{"type":"/music/album","name":null,"artist":{"id":"/en/bob_dylan"},"limit":3}]', $response->getBody()->queryString->query);
+        $this->assertEquals(
+            '[{"type":"/music/album","name":null,"artist":{"id":"/en/bob_dylan"},"limit":3}]',
+            $response->getBody()->queryString->query
+        );
     }
 
     public function testGetArray()
@@ -526,7 +532,12 @@ class RequestTest extends TestCase
 
         $body = Body::multipart($data, $files);
 
-        $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::POST, $headers, $body));
+        $response = $httpClient->execute(new Request(
+            'http://mockbin.com/request',
+            RequestMethod::POST,
+            $headers,
+            $body
+        ));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('POST', $response->getBody()->method);

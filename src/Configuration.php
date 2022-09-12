@@ -6,7 +6,7 @@ namespace Unirest;
 
 use CoreDesign\Http\HttpConfigurations;
 
-class Configuration implements HttpConfigurations
+class Configuration
 {
     /**
      * @var string|null
@@ -49,16 +49,25 @@ class Configuration implements HttpConfigurations
         ]
     ];
 
-    public static function init(): self
+    public static function init(?HttpConfigurations $httpConfigurations = null): self
     {
-        return new self();
+        return new self($httpConfigurations);
     }
 
-    /**
-     * @phan-suppress PhanEmptyPrivateMethod
-     */
-    private function __construct()
+    private function __construct(?HttpConfigurations $httpConfigurations)
     {
+        if (is_null($httpConfigurations)) {
+            return;
+        }
+        $this->timeout($httpConfigurations->getTimeout())
+            ->enableRetries($httpConfigurations->shouldEnableRetries())
+            ->maxNumberOfRetries($httpConfigurations->getNumberOfRetries())
+            ->retryOnTimeout($httpConfigurations->shouldRetryOnTimeout())
+            ->retryInterval($httpConfigurations->getRetryInterval())
+            ->maximumRetryWaitTime($httpConfigurations->getMaximumRetryWaitTime())
+            ->backoffFactor($httpConfigurations->getBackOffFactor())
+            ->httpStatusCodesToRetry($httpConfigurations->getHttpStatusCodesToRetry())
+            ->httpMethodsToRetry($httpConfigurations->getHttpMethodsToRetry());
     }
 
     /**
