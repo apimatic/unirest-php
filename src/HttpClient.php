@@ -215,18 +215,18 @@ class HttpClient implements HttpClientInterface
     /**
      * Generate calculated wait time, and 0.0 if api should not be retried
      *
-     * @param $httpCode        int    Http status code in response
-     * @param $headers         array  Response headers
-     * @param $error           string Error returned by server
-     * @param $allowedWaitTime int    Remaining allowed wait time
-     * @param $retryCount      int    Attempt number
+     * @param int|null $httpCode        Http status code in response
+     * @param array    $headers         Response headers
+     * @param string   $error           Error returned by server
+     * @param float    $allowedWaitTime Remaining allowed wait time
+     * @param int      $retryCount      Attempt number
      * @return float  Wait time before sending the next apiCall
      */
     protected function getRetryWaitTime(
         ?int $httpCode,
         array $headers,
         string $error,
-        int $allowedWaitTime,
+        float $allowedWaitTime,
         int $retryCount
     ): float {
         $retryWaitTime = 0.0;
@@ -262,7 +262,7 @@ class HttpClient implements HttpClientInterface
     /**
      * Returns the number of seconds by extracting them from $retry-after parameter
      *
-     * @param $retry_after int|string Some numeric value in seconds, or it could be RFC1123
+     * @param int|string $retry_after Some numeric value in seconds, or it could be RFC1123
      *                                formatted datetime string
      * @return int Number of seconds specified by retry-after param
      */
