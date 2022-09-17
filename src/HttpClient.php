@@ -205,7 +205,7 @@ class HttpClient implements HttpClientInterface
                 return $this->config->shouldEnableRetries();
             case RetryOption::USE_GLOBAL_SETTINGS:
                 return $this->config->shouldEnableRetries()
-                    && in_array($request->getHttpMethod(), $this->config->getHttpMethodsToRetry(), true);
+                    && in_array(strtoupper($request->getHttpMethod()), $this->config->getHttpMethodsToRetry(), true);
             case RetryOption::DISABLE_RETRY:
                 return false;
         }
