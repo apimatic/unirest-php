@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Unirest;
 
-use CoreDesign\Core\Response\ResponseInterface;
-use CoreDesign\Sdk\ConverterInterface;
+use CoreInterfaces\Core\Response\ResponseInterface;
+use CoreInterfaces\Sdk\ConverterInterface;
 
 class Response implements ResponseInterface
 {

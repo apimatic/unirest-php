@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unirest;
 
-use CoreDesign\Http\HttpConfigurations;
+use CoreInterfaces\Http\HttpConfigurations;
 
 class Configuration
 {

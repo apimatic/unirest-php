@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Unirest;
 
-use CoreDesign\Core\Request\RequestInterface;
-use CoreDesign\Core\Request\RequestMethod;
-use CoreDesign\Core\Response\ResponseInterface;
-use CoreDesign\Http\HttpClientInterface;
-use CoreDesign\Http\RetryOption;
+use CoreInterfaces\Core\Request\RequestInterface;
+use CoreInterfaces\Core\Request\RequestMethod;
+use CoreInterfaces\Core\Response\ResponseInterface;
+use CoreInterfaces\Http\HttpClientInterface;
+use CoreInterfaces\Http\RetryOption;
 use DateTime;
 use Unirest\Request\Request;
 

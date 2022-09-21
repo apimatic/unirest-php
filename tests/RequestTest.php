@@ -2,7 +2,7 @@
 
 namespace Unirest\Test;
 
-use CoreDesign\Core\Request\RequestMethod;
+use CoreInterfaces\Core\Request\RequestMethod;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Unirest\Configuration;

@@ -2,9 +2,9 @@
 
 namespace Unirest\Request;
 
-use CoreDesign\Core\Request\RequestInterface;
-use CoreDesign\Core\Request\RequestMethod;
-use CoreDesign\Http\RetryOption;
+use CoreInterfaces\Core\Request\RequestInterface;
+use CoreInterfaces\Core\Request\RequestMethod;
+use CoreInterfaces\Http\RetryOption;
 use Exception;
 use InvalidArgumentException;
 

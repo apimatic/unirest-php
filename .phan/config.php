@@ -27,7 +27,7 @@ return [
     'directory_list' => [
         'src',
         'tests',
-        $vendor_dir . '/apimatic/core-interfaces-php',
+        $vendor_dir . '/apimatic/core-interfaces',
         $vendor_dir . '/phpunit/phpunit'
     ],
 

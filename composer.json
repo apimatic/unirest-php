@@ -35,7 +35,7 @@
     "php": ">=7.2 <8.2",
     "ext-curl": "*",
     "ext-json": "*",
-    "apimatic/core-interfaces-php": "dev-master"
+    "apimatic/core-interfaces": "dev-master"
   },
   "require-dev": {
       "squizlabs/php_codesniffer": "^3.5",
