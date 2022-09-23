@@ -21,8 +21,7 @@ This fork is maintained by [APIMatic](https://www.apimatic.io) for its Code Gene
 
 ## Requirements
 
-- PHP 5.6+
-- PHP Curl extension
+- PHP v7.2.x => v8.1.x
 
 ## Installation
 
