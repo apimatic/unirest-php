@@ -43,26 +43,47 @@ composer require apimatic/unirest-php
 
 ## Usage
 
-### Creating a Request
-You can create a variable at class level and instantiate it with an instance of `Request`, like:
+### Creating a HttpClient with Default Configurations
+You can create a variable at class level and instantiate it with an instance of `HttpClient`, like:
 
 ```php
-private $request = new \Unirest\HttpClient(); 
+private $httpClient = new \Unirest\HttpClient();
 ```
-And then you can simply use the publicly exposed methods on that instance.
 
-Let's look at a working example:
+### Creating a HttpClient with Custom Configurations
+To create a client with custom configurations you first required an instance of `Configuration`, and then add it to the HttpClient during its initialization, like:
+```php
+$configurations = \Unirest\Configuration::init()
+    ->timeout(10)
+    ->enableRetries(true)
+    ->retryInterval(2.5);
+$httpClient = new \Unirest\HttpClient($configurations);
+```
+This `Configuration` instance can further be customized by setting properties like: `maximumRetryWaitTime`, `verifyPeer`, `defaultHeaders`, etc. Check out [Advanced Configuration](#advanced-configuration) for more information
+
+### Creating a Request
+After the initialization of HttpClient, you will be needing an instance of `Request` that is required to be exchanged as `Response`.
+```php
+$request = new \Unirest\Request\Request(
+    'http://mockbin.com/request',
+    RequestMethod::GET,
+    ['headerKey' => 'headerValue'],
+    Unirest\Request\Body::json(["key" => "value"]'),
+    RetryOption::ENABLE_RETRY
+);
+```
+Let's look at a working example of sending the above request:
 
 ```php
 $headers = array('Accept' => 'application/json');
 $query = array('foo' => 'hello', 'bar' => 'world');
 
-$response = $this->request->post('http://mockbin.com/request', $headers, $query);
+$response = $this->httpClient->execute($request);
 
-$response->code;        // HTTP Status code
-$response->headers;     // Headers
-$response->body;        // Parsed body
-$response->raw_body;    // Unparsed body
+$response->getStatusCode(); // HTTP Status code
+$response->getHeaders();    // Headers
+$response->getBody();       // Parsed body
+$response->getRawBody();    // Unparsed body
 ```
 
 ### JSON Requests *(`application/json`)*
@@ -74,8 +95,13 @@ $headers = array('Accept' => 'application/json');
 $data = array('name' => 'ahmad', 'company' => 'mashape');
 
 $body = Unirest\Request\Body::Json($data);
-
-$response = $this->request->post('http://mockbin.com/request', $headers, $body);
+$request = new \Unirest\Request\Request(
+    'http://mockbin.com/request',
+    RequestMethod::POST,
+    $headers,
+    $body
+);
+$response = $this->httpClient->execute($request);
 ```
 
 **Notes:**
@@ -92,8 +118,13 @@ $headers = array('Accept' => 'application/json');
 $data = array('name' => 'ahmad', 'company' => 'mashape');
 
 $body = Unirest\Request\Body::Form($data);
-
-$response = $this->request->post('http://mockbin.com/request', $headers, $body);
+$request = new \Unirest\Request\Request(
+    'http://mockbin.com/request',
+    RequestMethod::POST,
+    $headers,
+    $body
+);
+$response = $this->httpClient->execute($request);
 ```
 
 **Notes:** 
@@ -109,8 +140,13 @@ $headers = array('Accept' => 'application/json');
 $data = array('name' => 'ahmad', 'company' => 'mashape');
 
 $body = Unirest\Request\Body::Multipart($data);
-
-$response = $this->request->post('http://mockbin.com/request', $headers, $body);
+$request = new \Unirest\Request\Request(
+    'http://mockbin.com/request',
+    RequestMethod::POST,
+    $headers,
+    $body
+);
+$response = $this->httpClient->execute($request);
 ```
 
 **Notes:** 
@@ -128,8 +164,13 @@ $data = array('name' => 'ahmad', 'company' => 'mashape');
 $files = array('bio' => '/path/to/bio.txt', 'avatar' => '/path/to/avatar.jpg');
 
 $body = Unirest\Request\Body::Multipart($data, $files);
-
-$response = $this->request->post('http://mockbin.com/request', $headers, $body);
+$request = new \Unirest\Request\Request(
+    'http://mockbin.com/request',
+    RequestMethod::POST,
+    $headers,
+    $body
+);
+$response = $this->httpClient->execute($request);
  ```
 
 If you wish to further customize the properties of files uploaded you can do so with the `Unirest\Request\Body::File` helper:
@@ -142,8 +183,13 @@ $body = array(
     'bio' => Unirest\Request\Body::File('/path/to/bio.txt', 'text/plain'),
     'avatar' => Unirest\Request\Body::File('/path/to/my_avatar.jpg', 'text/plain', 'avatar.jpg')
 );
-
-$response = $this->request->post('http://mockbin.com/request', $headers, $body);
+$request = new \Unirest\Request\Request(
+    'http://mockbin.com/request',
+    RequestMethod::POST,
+    $headers,
+    $body
+);
+$response = $this->httpClient->execute($request);
  ```
 
 **Note**: we did not use the `Unirest\Request\Body::multipart` helper in this example, it is not needed when manually adding files.
@@ -155,23 +201,22 @@ Sending a custom body such rather than using the `Unirest\Request\Body` helpers 
 ```php
 $headers = array('Accept' => 'application/json', 'Content-Type' => 'application/x-php-serialized');
 $body = serialize((array('foo' => 'hello', 'bar' => 'world'));
-
-$response = $this->request->post('http://mockbin.com/request', $headers, $body);
+$request = new \Unirest\Request\Request(
+    'http://mockbin.com/request',
+    RequestMethod::POST,
+    $headers,
+    $body
+);
+$response = $this->httpClient->execute($request);
 ```
 
 ### Authentication
-
-First, if you are using [Mashape][mashape-url]:
-```php
-// Mashape auth
-$this->request->setMashapeKey('<mashape_key>');
-```
-
-Otherwise, passing a username, password *(optional)*, defaults to Basic Authentication:
+For Authentication you need httpClient instance with custom configurations, So, create `Configuration` instance like:
 
 ```php
-// basic auth
-$this->request->auth('username', 'password');
+// Basic auth
+$configuration = Configuration::init()
+    ->auth('username', 'password', CURLAUTH_BASIC);
 ```
 
 The third parameter, which is a bitmask, will Unirest which HTTP authentication method(s) you want it to use for your proxy authentication.
@@ -194,23 +239,16 @@ If more than one bit is set, Unirest *(at PHP's libcurl level)* will first query
 
 ```php
 // custom auth method
-$this->request->proxyAuth('username', 'password', CURLAUTH_DIGEST);
+$configuration = Configuration::init()
+    ->proxyAuth('username', 'password', CURLAUTH_DIGEST);
 ```
-
-Previous versions of **Unirest** support *Basic Authentication* by providing the `username` and `password` arguments:
-
-```php
-$response = $this->request->get('http://mockbin.com/request', null, null, 'username', 'password');
-```
-
-**This has been deprecated, and will be completely removed in `v.4.0.0` please use the `Unirest\Request::auth()` method instead**
-
 ### Cookies
 
 Set a cookie string to specify the contents of a cookie header. Multiple cookies are separated with a semicolon followed by a space (e.g., "fruit=apple; colour=red")
 
 ```php
-$this->request->cookie($cookie)
+$configuration = Configuration::init()
+    ->cookie($cookie);
 ```
 
 Set a cookie file path for enabling cookie reading and storing cookies across multiple sequence of requests.
@@ -221,36 +259,13 @@ $this->request->cookieFile($cookieFile)
 
 `$cookieFile` must be a correct path with write permission.
 
-### Request Object
-
-```php
-$this->request->get($url, $headers = array(), $parameters = null);
-$this->request->post($url, $headers = array(), $body = null);
-$this->request->put($url, $headers = array(), $body = null);
-$this->request->patch($url, $headers = array(), $body = null);
-$this->request->delete($url, $headers = array(), $body = null);
-```
-  
-- `url` - Endpoint, address, or uri to be acted upon and requested information from.
-- `headers` - Request Headers as associative array or object
-- `body` - Request Body as associative array or object
-
-You can send a request with any [standard](http://www.iana.org/assignments/http-methods/http-methods.xhtml) or custom HTTP Method:
-
-```php
-$this->request->send(Unirest\Method::LINK, $url, $headers = array(), $body);
-
-$this->request->send('CHECKOUT', $url, $headers = array(), $body);
-```
-
 ### Response Object
 
 Upon receiving a response Unirest returns the result in the form of an Object, this object should always have the same keys for each language regarding to the response details.
-
-- `code` - HTTP Response Status Code (Example `200`)
-- `headers` - HTTP Response Headers
-- `body` - Parsed response body where applicable, for example JSON responses are parsed to Objects / Associative Arrays.
-- `raw_body` - Un-parsed response body
+- `getStatusCode()` - HTTP Response Status Code (Example `200`)
+- `getHeaders()` - HTTP Response Headers
+- `getBody()` - Parsed response body where applicable, for example JSON responses are parsed to Objects / Associative Arrays.
+- `getRawBody()` - Un-parsed response body
 
 ### Advanced Configuration
 
@@ -264,7 +279,8 @@ sometime you may want to return associative arrays, limit the depth of recursion
 To do so, simply set the desired options using the `jsonOpts` request method:
 
 ```php
-$this->request->jsonOpts(true, 512, JSON_NUMERIC_CHECK & JSON_FORCE_OBJECT & JSON_UNESCAPED_SLASHES);
+$configuration = Configuration::init()
+    ->jsonOpts(true, 512, JSON_NUMERIC_CHECK & JSON_FORCE_OBJECT & JSON_UNESCAPED_SLASHES);
 ```
 
 #### Timeout
@@ -272,57 +288,22 @@ $this->request->jsonOpts(true, 512, JSON_NUMERIC_CHECK & JSON_FORCE_OBJECT & JSO
 You can set a custom timeout value (in **seconds**):
 
 ```php
-$this->request->timeout(5); // 5s timeout
+$configuration = Configuration::init()
+    ->timeout(5); // 5s timeout
 ```
 
 #### Retries Related
 
-To enable retries feature:
-
 ```php
-$this->request->enableRetries(true);
-```
-
-To set max number of retries:
-
-```php
-$this->request->maxNumberOfRetries(10);
-```
-
-Should we retry on timeout:
-
-```php
-$this->request->retryOnTimeout(false);
-```
-
-Initial retry interval in seconds:
-
-```php
-$this->request->retryInterval(20);
-```
-
-Maximum retry wait time:
-
-```php
-$this->request->maximumRetryWaitTime(30);
-```
-
-Backoff factor to be used to increase retry interval:
-
-```php
-$this->request->backoffFactor(1.1);
-```
-
-Http status codes to retry against:
-
-```php
-$this->request->httpStatusCodesToRetry([400,401]);
-```
-
-Http methods to retry against:
-
-```php
-$this->request->httpMethodsToRetry(['POST']);
+$configuration = Configuration::init()
+    ->enableRetries(true)               // To enable retries feature
+    ->maxNumberOfRetries(10)            // To set max number of retries
+    ->retryOnTimeout(false)             // Should we retry on timeout
+    ->retryInterval(20)                 // Initial retry interval in seconds
+    ->maximumRetryWaitTime(30)          // Maximum retry wait time
+    ->backoffFactor(1.1)                // Backoff factor to be used to increase retry interval
+    ->httpStatusCodesToRetry([400,401]) // Http status codes to retry against
+    ->httpMethodsToRetry(['POST'])      // Http methods to retry against
 ```
 
 #### Proxy
@@ -335,13 +316,16 @@ you can also set the proxy type to be one of `CURLPROXY_HTTP`, `CURLPROXY_HTTP_1
 
 ```php
 // quick setup with default port: 1080
-$this->request->proxy('10.10.10.1');
+$configuration = Configuration::init()
+    ->proxy('10.10.10.1');
 
 // custom port and proxy type
-$this->request->proxy('10.10.10.1', 8080, CURLPROXY_HTTP);
+$configuration = Configuration::init()
+    ->proxy('10.10.10.1', 8080, CURLPROXY_HTTP);
 
 // enable tunneling
-$this->request->proxy('10.10.10.1', 8080, CURLPROXY_HTTP, true);
+$configuration = Configuration::init()
+    ->proxy('10.10.10.1', 8080, CURLPROXY_HTTP, true);
 ```
 
 ##### Proxy Authentication
@@ -350,7 +334,8 @@ Passing a username, password *(optional)*, defaults to Basic Authentication:
 
 ```php
 // basic auth
-$this->request->proxyAuth('username', 'password');
+$configuration = Configuration::init()
+    ->proxyAuth('username', 'password');
 ```
 
 The third parameter, which is a bitmask, will Unirest which HTTP authentication method(s) you want it to use for your proxy authentication. 
@@ -361,7 +346,8 @@ See [Authentication](#authentication) for more details on methods supported.
 
 ```php
 // basic auth
-$this->request->proxyAuth('username', 'password', CURLAUTH_DIGEST);
+$configuration = Configuration::init()
+    ->proxyAuth('username', 'password', CURLAUTH_DIGEST);
 ```
 
 #### Default Request Headers
@@ -369,23 +355,26 @@ $this->request->proxyAuth('username', 'password', CURLAUTH_DIGEST);
 You can set default headers that will be sent on every request:
 
 ```php
-$this->request->defaultHeader('Header1', 'Value1');
-$this->request->defaultHeader('Header2', 'Value2');
+$configuration = Configuration::init()
+    ->defaultHeader('Header1', 'Value1')
+    ->defaultHeader('Header2', 'Value2');
 ```
 
 You can set default headers in bulk by passing an array:
 
 ```php
-$this->request->defaultHeaders(array(
-    'Header1' => 'Value1',
-    'Header2' => 'Value2'
-));
+$configuration = Configuration::init()
+    ->defaultHeaders([
+        'Header1' => 'Value1',
+        'Header2' => 'Value2'
+    ]);
 ```
 
 You can clear the default headers anytime with:
 
 ```php
-$this->request->clearDefaultHeaders();
+$configuration = Configuration::init()
+    ->clearDefaultHeaders();
 ```
 
 #### Default cURL Options
@@ -393,13 +382,15 @@ $this->request->clearDefaultHeaders();
 You can set default [cURL options](http://php.net/manual/en/function.curl-setopt.php) that will be sent on every request:
 
 ```php
-$this->request->curlOpt(CURLOPT_COOKIE, 'foo=bar');
+$configuration = Configuration::init()
+    ->curlOpt(CURLOPT_COOKIE, 'foo=bar');
 ```
 
 You can set options bulk by passing an array:
 
 ```php
-$this->request->curlOpts(array(
+$configuration = Configuration::init()
+    ->curlOpts(array(
     CURLOPT_COOKIE => 'foo=bar'
 ));
 ```
@@ -407,7 +398,8 @@ $this->request->curlOpts(array(
 You can clear the default options anytime with:
 
 ```php
-$this->request->clearCurlOpts();
+$configuration = Configuration::init()
+    ->clearCurlOpts();
 ```
 
 #### SSL validation
@@ -415,7 +407,8 @@ $this->request->clearCurlOpts();
 You can explicitly enable or disable SSL certificate validation when consuming an SSL protected endpoint:
 
 ```php
-$this->request->verifyPeer(false); // Disables SSL cert validation
+$configuration = Configuration::init()
+    ->verifyPeer(false); // Disables SSL cert validation
 ```
 
 By default is `true`.
@@ -424,23 +417,15 @@ By default is `true`.
 
 ```php
 // alias for `curl_getinfo`
-$this->request->getInfo();
+$httpClient->getInfo();
 
-// returns internal cURL handle
-$this->request->getCurlHandle();
 ```
 
 ----
 
-Made with &#9829; from the [Mashape][mashape-url] team
-
-[mashape-url]: https://www.mashape.com/
-
 [license-url]: https://github.com/apimatic/unirest-php/blob/master/LICENSE
-
 [travis-url]: https://travis-ci.org/apimatic/unirest-php
 [travis-image]: https://img.shields.io/travis/apimatic/unirest-php.svg?style=flat
-
 [packagist-url]: https://packagist.org/packages/apimatic/unirest-php
 [packagist-license]: https://img.shields.io/packagist/l/apimatic/unirest-php.svg?style=flat
 [packagist-version]: https://img.shields.io/packagist/v/apimatic/unirest-php.svg?style=flat
