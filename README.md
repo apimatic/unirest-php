@@ -11,13 +11,17 @@ This fork is maintained by [APIMatic](https://www.apimatic.io) for its Code Gene
 
 ## Features
 
-* Utility methods to call `GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `CONNECT`, `OPTIONS`, `TRACE`, `PATCH` requests
+* Request class to create custom requests
+* Simple HttpClientInterface to execute a Request
+* Automatic JSON parsing into a native object for JSON responses
+* Response data class to store http response information
 * Supports form parameters, file uploads and custom body entities
 * Supports gzip
 * Supports Basic, Digest, Negotiate, NTLM Authentication natively
+* Configuration class manage all the HttpClient's configurations
 * Customizable timeout
+* Customizable retries and backoff
 * Customizable default headers for every request (DRY)
-* Automatic JSON parsing into a native object for JSON responses
 
 ## Requirements
 
@@ -59,7 +63,7 @@ $configurations = \Unirest\Configuration::init()
     ->retryInterval(2.5);
 $httpClient = new \Unirest\HttpClient($configurations);
 ```
-This `Configuration` instance can further be customized by setting properties like: `maximumRetryWaitTime`, `verifyPeer`, `defaultHeaders`, etc. Check out [Advanced Configuration](#advanced-configuration) for more information
+This `Configuration` instance can further be customized by setting properties like: `maximumRetryWaitTime`, `verifyPeer`, `defaultHeaders`, etc. Check out [Advanced Configuration](#advanced-configuration) for more information.
 
 ### Creating a Request
 After the initialization of HttpClient, you will be needing an instance of `Request` that is required to be exchanged as `Response`.
