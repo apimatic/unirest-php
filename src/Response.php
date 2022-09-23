@@ -15,8 +15,8 @@ class Response implements ResponseInterface
     private $headers;
 
     /**
-     * @param int $code      response code of the cURL request
-     * @param string $raw_body  the raw body of the cURL response
+     * @param int $code        response code of the cURL request
+     * @param string $raw_body the raw body of the cURL response
      * @param array $headers   parsed headers array from cURL response
      * @param array $json_args arguments to pass to json_decode function
      */
