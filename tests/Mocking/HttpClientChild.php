@@ -1,8 +1,10 @@
 <?php
 
-namespace Unirest;
+namespace Unirest\Test\Mocking;
 
-class RequestChild extends Request
+use Unirest\HttpClient;
+
+class HttpClientChild extends HttpClient
 {
     public function getTotalNumberOfConnections()
     {
