@@ -10,12 +10,6 @@
   ],
   "type": "library",
   "homepage": "https://github.com/apimatic/unirest-php",
-  "repositories": [
-    {
-      "type": "git",
-      "url": "https://github.com/apimatic/core-interfaces-php.git"
-    }
-  ],
   "license": "MIT",
   "authors": [
     {
@@ -35,7 +29,7 @@
     "php": ">=7.2 <8.2",
     "ext-curl": "*",
     "ext-json": "*",
-    "apimatic/core-interfaces": "dev-master"
+    "apimatic/core-interfaces": "^0.1.0"
   },
   "require-dev": {
       "squizlabs/php_codesniffer": "^3.5",
