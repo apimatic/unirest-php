@@ -30,11 +30,7 @@ jobs:
           path: ~/.composer/cache/files
           key: unirest-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: unirest-php-${{ matrix.php }}-composer-
-      - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: composer install
       - name: Update dependencies
-        if: steps.cache.outputs.cache-hit == 'true'
         run: composer update
       - name: Run lint
         run: composer lint
