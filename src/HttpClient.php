@@ -101,9 +101,14 @@ class HttpClient implements HttpClientInterface
         if (empty($encodedBody)) {
             return $multipartParameters;
         }
-        foreach (explode('&', $encodedBody) as $param) {
-            $keyValue = explode('=', $param);
-            $multipartParameters[urldecode($keyValue[0])] = urldecode($keyValue[1]);
+        foreach ($request->getParameters() as $key => $value) {
+            if (array_key_exists($key, $multipartParameters)) {
+                continue;
+            }
+            if (!is_string($value) && !is_null($value)) {
+                $value = json_encode($value);
+            }
+            $multipartParameters[$key] = $value;
         }
         return $multipartParameters;
     }
