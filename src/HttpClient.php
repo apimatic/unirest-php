@@ -58,7 +58,7 @@ class HttpClient implements HttpClientInterface
             if (empty($error)) {
                 $header_size = $info['header_size'];
                 $httpCode    = (int)$info['http_code'];
-                var_dump($this->getInfo(CURLOPT_URL), $response);
+                var_dump($response);
                 $headers     = $this->parseHeaders(substr($response, 0, $header_size));
             }
 
@@ -134,6 +134,8 @@ class HttpClient implements HttpClientInterface
             }
             $queryUrl .= urldecode(http_build_query(Request::buildHTTPCurlQuery($body)));
         }
+        print_r("Query URL: $queryUrl");
+
         $curl_base_options = [
             CURLOPT_URL => $queryUrl,
             CURLOPT_RETURNTRANSFER => true,
