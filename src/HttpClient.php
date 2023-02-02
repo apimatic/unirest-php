@@ -132,7 +132,7 @@ class HttpClient implements HttpClientInterface
             } else {
                 $queryUrl .= '?';
             }
-            $queryUrl .= urldecode(http_build_query(Request::buildHTTPCurlQuery($body)));
+            $queryUrl .= http_build_query(Request::buildHTTPCurlQuery($body));
         }
         print_r("Query URL: $queryUrl");
 
