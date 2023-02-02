@@ -121,15 +121,19 @@ class HttpClient implements HttpClientInterface
                 }
                 curl_setopt($handle, CURLOPT_CUSTOMREQUEST, strtoupper($request->getHttpMethod()));
             }
-            curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+
+            if (!is_null($body)) {
+                curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+            }
         } elseif (is_array($body)) {
             if (strpos($queryUrl, '?') !== false) {
                 $queryUrl .= '&';
             } else {
                 $queryUrl .= '?';
             }
-            $queryUrl .= urldecode(http_build_query(Request::buildHTTPCurlQuery($body)));
+            $queryUrl .= http_build_query(Request::buildHTTPCurlQuery($body));
         }
+
         $curl_base_options = [
             CURLOPT_URL => $queryUrl,
             CURLOPT_RETURNTRANSFER => true,
