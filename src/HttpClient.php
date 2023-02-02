@@ -121,7 +121,10 @@ class HttpClient implements HttpClientInterface
                 }
                 curl_setopt($handle, CURLOPT_CUSTOMREQUEST, strtoupper($request->getHttpMethod()));
             }
-            curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+
+            if (!is_null($body)) {
+                curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+            }
         } elseif (is_array($body)) {
             if (strpos($queryUrl, '?') !== false) {
                 $queryUrl .= '&';
