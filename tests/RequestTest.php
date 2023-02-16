@@ -42,9 +42,7 @@ class RequestTest extends TestCase
         $response = $httpClient->execute(new Request('http://mockbin.com/request'));
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertObjectHasAttribute('header1', $response->getBody()->headers);
         $this->assertEquals('Hello', $response->getBody()->headers->header1);
-        $this->assertObjectHasAttribute('header2', $response->getBody()->headers);
         $this->assertEquals('world', $response->getBody()->headers->header2);
 
         $response = $httpClient->execute(new Request(
@@ -54,7 +52,6 @@ class RequestTest extends TestCase
         ));
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertObjectHasAttribute('header1', $response->getBody()->headers);
         $this->assertEquals('Custom value', $response->getBody()->headers->header1);
 
         $httpClient = new HttpClient();
@@ -62,8 +59,8 @@ class RequestTest extends TestCase
         $response = $httpClient->execute(new Request('http://mockbin.com/request'));
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertObjectNotHasAttribute('header1', $response->getBody()->headers);
-        $this->assertObjectNotHasAttribute('header2', $response->getBody()->headers);
+        $this->assertFalse(isset($response->getBody()->headers->header1));
+        $this->assertFalse(isset($response->getBody()->headers->header2));
     }
 
     public function testDefaultHeader()
