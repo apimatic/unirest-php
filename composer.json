@@ -29,7 +29,7 @@
     "php": ">=7.2 <8.3",
     "ext-curl": "*",
     "ext-json": "*",
-    "apimatic/core-interfaces": "^0.1.0"
+    "apimatic/core-interfaces": "dev-3-php-8.2-support"
   },
   "require-dev": {
       "squizlabs/php_codesniffer": "^3.5",
