@@ -2,9 +2,7 @@ name: Tests
 on:
   workflow_dispatch:
   push:
-    branches: [ v2-master ]
-  pull_request:
-    branches: [ v2-master ]
+    branches: [ "36-php-8.2-support" ]
 permissions:
   contents: read
 jobs:
@@ -15,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.2', '7.3', '7.4', '8.0', '8.1']
+        php: ['7.2', '7.3', '7.4', '8.0', '8.1', '8.2']
     steps:
       - name: Checkout
         uses: actions/checkout@v3
