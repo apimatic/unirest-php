@@ -2,7 +2,9 @@ name: Tests
 on:
   workflow_dispatch:
   push:
-    branches: [ "36-php-8.2-support" ]
+    branches: [ v2-master ]
+  pull_request:
+    branches: [ v2-master ]
 permissions:
   contents: read
 jobs:
