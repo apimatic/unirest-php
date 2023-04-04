@@ -23,9 +23,12 @@ This fork is maintained by [APIMatic](https://www.apimatic.io) for its Code Gene
 * Customizable retries and backoff
 * Customizable default headers for every request (DRY)
 
-## Requirements
-
-- PHP v7.2.x => v8.1.x
+## Supported PHP Versions
+- PHP 7.2
+- PHP 7.4
+- PHP 8.0
+- PHP 8.1
+- PHP 8.2
 
 ## Installation
 
