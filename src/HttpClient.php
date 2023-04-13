@@ -105,7 +105,50 @@ class HttpClient implements HttpClientInterface
             $keyValue = explode('=', $param);
             $multipartParameters[urldecode($keyValue[0])] = urldecode($keyValue[1]);
         }
-        return $multipartParameters;
+        return $this->createMultiPartFormData($multipartParameters);
+    }
+
+    private function createMultiPartFormData($multipartParameters)
+    {
+        $i = 1;
+        $length = count($multipartParameters);
+        $boundary = uniqid();
+        $post_data = '';
+
+        foreach ($multipartParameters as $key => $parameter) {
+            $post_data .= '--' . $boundary . "\r\n";
+
+            if ($parameter instanceof \CURLFile) {
+                $post_data .= 'Content-Disposition: form-data; name="'
+                    . $key
+                    . '"; filename="' . basename($parameter->getFilename())
+                    . '"' . "\r\n";
+
+                $post_data .= 'Content-Type: ' . $parameter->getMimeType() . "\r\n\r\n";
+                $post_data .= file_get_contents($parameter->getFilename()) . "\r\n";
+            } elseif (is_array($parameter) && isset($parameter["content-type"])) {
+                $post_data .= 'Content-Disposition: form-data; name="' . $key . '"' . "\r\n";
+                $post_data .= 'Content-Type: ' . $parameter["content-type"] . "\r\n\r\n";
+
+                if (isset($parameter["value"])) {
+                    $post_data .= $parameter["value"] . "\r\n";
+                }
+            } else {
+                $post_data .= 'Content-Disposition: form-data; name="' . $key . '"' . "\r\n\r\n";
+                $post_data .= $parameter . "\r\n";
+            }
+            if ($i == $length) {
+                $post_data .= '--' . $boundary . '--' . "\r\n";
+            }
+
+            $i++;
+        }
+
+        $headers = [];
+        $headers["Content-Type"] = 'multipart/form-data; ' . 'boundary=' . $boundary;
+        $headers["Content-Length"] = strlen($post_data);
+
+        return [ "isCustomMultiPartData" => true, "data" => $post_data, "headers" => $headers ];
     }
 
     protected function setCurlOptions($handle, RequestInterface $request): void
@@ -123,7 +166,11 @@ class HttpClient implements HttpClientInterface
             }
 
             if (!is_null($body)) {
-                curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+                if (is_array($body) && isset($body["isCustomMultiPartData"])) {
+                    curl_setopt($handle, CURLOPT_POSTFIELDS, $body["data"]);
+                } else {
+                    curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+                }
             }
         } elseif (is_array($body)) {
             if (strpos($queryUrl, '?') !== false) {
@@ -134,12 +181,16 @@ class HttpClient implements HttpClientInterface
             $queryUrl .= http_build_query(Request::buildHTTPCurlQuery($body));
         }
 
+        $multiPartRequestHeaders = (is_array($body) && isset($body["isCustomMultiPartData"])) ? $body["headers"] : [];
+
+        $headers = $this->getFormattedHeaders($request, $multiPartRequestHeaders);
+
         $curl_base_options = [
             CURLOPT_URL => $queryUrl,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($request),
+            CURLOPT_HTTPHEADER => $headers,
             CURLOPT_HEADER => true,
             CURLOPT_SSL_VERIFYPEER => $this->config->shouldVerifyPeer(),
             // CURLOPT_SSL_VERIFYHOST accepts only 0 (false) or 2 (true).
@@ -333,23 +384,21 @@ class HttpClient implements HttpClientInterface
         return curl_getinfo($this->handle, $option);
     }
 
-    protected function getFormattedHeaders(RequestInterface $request): array
+    protected function getFormattedHeaders(RequestInterface $request, $multiPartRequestHeaders = []): array
     {
-        $combinedHeaders = array_change_key_case(array_merge(
+        $requestHeaders = array_change_key_case(array_merge(
             ['user-agent' => 'unirest-php/4.0', 'expect' => ''],
             $this->config->getDefaultHeaders(),
             $request->getHeaders()
         ));
+        $combinedHeaders = array_merge($requestHeaders, $multiPartRequestHeaders);
+
         $formattedHeaders = [];
         foreach ($combinedHeaders as $key => $val) {
             $key = trim($key);
-            if (!empty($request->getParameters()) && $key == 'content-type') {
-                // special handling for form parameters i.e. removing content-type header
-                // As, Curl will automatically add content-type for form params
-                continue;
-            }
             $formattedHeaders[] = "$key: $val";
         }
+
         return $formattedHeaders;
     }
 
