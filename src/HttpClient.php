@@ -134,8 +134,11 @@ class HttpClient implements HttpClientInterface
                     $post_data .= $parameter["value"] . "\r\n";
                 }
             } else {
-                $post_data .= 'Content-Disposition: form-data; name="' . $key . '"' . "\r\n\r\n";
-                $post_data .= $parameter . "\r\n";
+                // Can we get arrays here as parameters?
+                if (!is_array($parameter)) {
+                    $post_data .= 'Content-Disposition: form-data; name="' . $key . '"' . "\r\n\r\n";
+                    $post_data .= $parameter . "\r\n";
+                }
             }
             if ($i == $length) {
                 $post_data .= '--' . $boundary . '--' . "\r\n";
