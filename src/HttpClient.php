@@ -125,10 +125,11 @@ class HttpClient implements HttpClientInterface
 
                 $post_data .= 'Content-Type: ' . $parameter->getMimeType() . "\r\n\r\n";
                 $post_data .= file_get_contents($parameter->getFilename()) . "\r\n";
-            } elseif (is_array($parameter) && isset($parameter["content-type"])) {
+            } elseif (isset($parameter["headers"]["content-type"])) {
                 $post_data .= 'Content-Disposition: form-data; name="' . $key . '"' . "\r\n";
-                $post_data .= 'Content-Type: ' . $parameter["content-type"] . "\r\n\r\n";
-
+                foreach($parameter["headers"] as $headerKey => $headerValue) {
+                    $post_data .= $headerKey . ': ' . $headerValue . "\r\n\r\n";
+                }
                 if (isset($parameter["data"])) {
                     $post_data .= $parameter["data"] . "\r\n";
                 }
