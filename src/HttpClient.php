@@ -88,7 +88,7 @@ class HttpClient implements HttpClientInterface
     protected function getBody(RequestInterface $request)
     {
         if (empty($request->getParameters())) {
-            return $request->getBody();
+            return [ "data" => $request->getBody(), "headers" => [] ];
         }
         // special handling for form parameters i.e.
         // returning flatten array with encoded keys if any multipart parameter exists
@@ -96,10 +96,10 @@ class HttpClient implements HttpClientInterface
         $encodedBody = join('&', $request->getEncodedParameters());
         $multipartParameters = $request->getMultipartParameters();
         if (empty($multipartParameters)) {
-            return $encodedBody;
+            return [ "data" => $encodedBody, "headers" => [] ];
         }
         if (empty($encodedBody)) {
-            return $multipartParameters;
+            return [ "data" => $multipartParameters, "headers" => [] ];
         }
         foreach (explode('&', $encodedBody) as $param) {
             $keyValue = explode('=', $param);
@@ -148,10 +148,10 @@ class HttpClient implements HttpClientInterface
         }
 
         $headers = [];
-        $headers["Content-Type"] = 'multipart/form-data; ' . 'boundary=' . $boundary;
-        $headers["Content-Length"] = strlen($post_data);
+        $headers["content-type"] = 'multipart/form-data; ' . 'boundary=' . $boundary;
+        $headers["content-length"] = strlen($post_data);
 
-        return [ "isCustomMultiPartData" => true, "data" => $post_data, "headers" => $headers ];
+        return [ "data" => $post_data, "headers" => $headers ];
     }
 
     protected function setCurlOptions($handle, RequestInterface $request): void
@@ -169,13 +169,9 @@ class HttpClient implements HttpClientInterface
             }
 
             if (!is_null($body)) {
-                if (is_array($body) && isset($body["isCustomMultiPartData"])) {
-                    curl_setopt($handle, CURLOPT_POSTFIELDS, $body["data"]);
-                } else {
-                    curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
-                }
+                curl_setopt($handle, CURLOPT_POSTFIELDS, $body["data"]);
             }
-        } elseif (is_array($body)) {
+        } elseif (is_array($body["data"])) {
             if (strpos($queryUrl, '?') !== false) {
                 $queryUrl .= '&';
             } else {
@@ -184,9 +180,7 @@ class HttpClient implements HttpClientInterface
             $queryUrl .= http_build_query(Request::buildHTTPCurlQuery($body));
         }
 
-        $multiPartRequestHeaders = (is_array($body) && isset($body["isCustomMultiPartData"])) ? $body["headers"] : [];
-
-        $headers = $this->getFormattedHeaders($request, $multiPartRequestHeaders);
+        $headers = $this->getFormattedHeaders($request, $body["headers"]);
 
         $curl_base_options = [
             CURLOPT_URL => $queryUrl,
@@ -389,12 +383,12 @@ class HttpClient implements HttpClientInterface
 
     protected function getFormattedHeaders(RequestInterface $request, $multiPartRequestHeaders = []): array
     {
-        $requestHeaders = array_change_key_case(array_merge(
+        $combinedHeaders = array_change_key_case(array_merge(
             ['user-agent' => 'unirest-php/4.0', 'expect' => ''],
             $this->config->getDefaultHeaders(),
-            $request->getHeaders()
+            $request->getHeaders(),
+            $multiPartRequestHeaders
         ));
-        $combinedHeaders = array_merge($requestHeaders, $multiPartRequestHeaders);
 
         $formattedHeaders = [];
         foreach ($combinedHeaders as $key => $val) {
