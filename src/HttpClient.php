@@ -96,10 +96,10 @@ class HttpClient implements HttpClientInterface
         $encodedBody = join('&', $request->getEncodedParameters());
         $multipartParameters = $request->getMultipartParameters();
         if (empty($multipartParameters)) {
-            return [ "data" => $encodedBody, "headers" => [] ];
+            return [ 'data' => $encodedBody, 'headers' => [ 'content-type' => 'application/x-www-form-urlencoded' ] ];
         }
         if (empty($encodedBody)) {
-            return [ "data" => $multipartParameters, "headers" => [] ];
+            return $this->createMultiPartFormData($multipartParameters);
         }
         foreach (explode('&', $encodedBody) as $param) {
             $keyValue = explode('=', $param);
@@ -147,8 +147,8 @@ class HttpClient implements HttpClientInterface
         }
 
         $headers = [];
-        $headers["content-type"] = 'multipart/form-data; ' . 'boundary=' . $boundary;
-        $headers["content-length"] = strlen($post_data);
+        $headers['content-type'] = 'multipart/form-data; ' . 'boundary=' . $boundary;
+        $headers['content-length'] = strlen($post_data);
 
         return [ "data" => $post_data, "headers" => $headers ];
     }
