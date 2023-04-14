@@ -117,7 +117,6 @@ class HttpClient implements HttpClientInterface
 
         foreach ($multipartParameters as $key => $parameter) {
             $post_data .= '--' . $boundary . "\r\n";
-
             if ($parameter instanceof \CURLFile) {
                 $post_data .= 'Content-Disposition: form-data; name="'
                     . $key
@@ -130,8 +129,8 @@ class HttpClient implements HttpClientInterface
                 $post_data .= 'Content-Disposition: form-data; name="' . $key . '"' . "\r\n";
                 $post_data .= 'Content-Type: ' . $parameter["content-type"] . "\r\n\r\n";
 
-                if (isset($parameter["value"])) {
-                    $post_data .= $parameter["value"] . "\r\n";
+                if (isset($parameter["data"])) {
+                    $post_data .= $parameter["data"] . "\r\n";
                 }
             } else {
                 // Can we get arrays here as parameters?
@@ -143,7 +142,6 @@ class HttpClient implements HttpClientInterface
             if ($i == $length) {
                 $post_data .= '--' . $boundary . '--' . "\r\n";
             }
-
             $i++;
         }
 
