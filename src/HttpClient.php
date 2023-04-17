@@ -9,6 +9,7 @@ use CoreInterfaces\Core\Request\RequestMethod;
 use CoreInterfaces\Core\Response\ResponseInterface;
 use CoreInterfaces\Http\HttpClientInterface;
 use CoreInterfaces\Http\RetryOption;
+use CURLFile;
 use DateTime;
 use Unirest\Request\Request;
 
@@ -85,7 +86,7 @@ class HttpClient implements HttpClientInterface
         $this->totalNumberOfConnections = 0;
     }
 
-    protected function getBody(RequestInterface $request)
+    protected function getBody(RequestInterface $request): array
     {
         if (empty($request->getParameters())) {
             return [ "data" => $request->getBody(), "headers" => [] ];
@@ -108,43 +109,40 @@ class HttpClient implements HttpClientInterface
         return $this->createMultiPartFormData($multipartParameters);
     }
 
-    private function createMultiPartFormData($multipartParameters)
+    protected function createMultiPartFormData($multipartParameters): array
     {
-        $i = 1;
-        $length = count($multipartParameters);
         $boundary = uniqid();
         $post_data = '';
 
         foreach ($multipartParameters as $key => $parameter) {
-            $post_data .= '--' . $boundary . "\r\n" . 'Content-Disposition: form-data; name="' . $key . '"';
-            if ($parameter instanceof \CURLFile) {
-                $post_data .= '; filename="' . basename($parameter->getFilename()) . '"' . "\r\n";
+            $post_data .= '--' . $boundary . "\r\n";
+            $post_data .= 'Content-Disposition: form-data; name="' . $key . '"; ';
+            if ($parameter instanceof CURLFile) {
+                $post_data .= 'filename="' . basename($parameter->getFilename()) . '"' . "\r\n";
                 $post_data .= 'Content-Type: ' . $parameter->getMimeType() . "\r\n\r\n";
                 $post_data .= file_get_contents($parameter->getFilename()) . "\r\n";
-            } elseif (isset($parameter["headers"])) {
+                continue;
+            }
+            if (isset($parameter["headers"]) && !empty($parameter["headers"])) {
                 $post_data .= "\r\n";
-                foreach($parameter["headers"] as $headerKey => $headerValue) {
+                foreach ($parameter["headers"] as $headerKey => $headerValue) {
                     $post_data .= $headerKey . ': ' . $headerValue . "\r\n\r\n";
                 }
                 if (isset($parameter["data"])) {
                     $post_data .= $parameter["data"] . "\r\n";
                 }
-            } else {
-                // Can we get arrays here as parameters?
-                if (!is_array($parameter)) {
-                    $post_data .= 'Content-Disposition: form-data; name="' . $key . '"' . "\r\n\r\n";
-                    $post_data .= $parameter . "\r\n";
-                }
+                continue;
             }
-            if ($i == $length) {
-                $post_data .= '--' . $boundary . '--' . "\r\n";
-            }
-            $i++;
-        }
 
-        $headers = [];
-        $headers['content-type'] = 'multipart/form-data; ' . 'boundary=' . $boundary;
-        $headers['content-length'] = strlen($post_data);
+            $post_data .= "\r\n\r\n";
+            $post_data .= $parameter . "\r\n";
+        }
+        $post_data .= '--' . $boundary . '--' . "\r\n";
+
+        $headers = [
+            'content-type' => 'multipart/form-data; ' . 'boundary=' . $boundary,
+            'content-length' => strlen($post_data)
+        ];
 
         return [ "data" => $post_data, "headers" => $headers ];
     }
@@ -163,7 +161,7 @@ class HttpClient implements HttpClientInterface
                 curl_setopt($handle, CURLOPT_CUSTOMREQUEST, strtoupper($request->getHttpMethod()));
             }
 
-            if (!is_null($body)) {
+            if (!is_null($body) && !is_null($body["data"])) {
                 curl_setopt($handle, CURLOPT_POSTFIELDS, $body["data"]);
             }
         } elseif (is_array($body["data"])) {
@@ -172,10 +170,14 @@ class HttpClient implements HttpClientInterface
             } else {
                 $queryUrl .= '?';
             }
-            $queryUrl .= http_build_query(Request::buildHTTPCurlQuery($body));
+            $queryUrl .= http_build_query(Request::buildHTTPCurlQuery($body["data"]));
         }
 
-        $headers = $this->getFormattedHeaders($request, $body["headers"]);
+        $headers = [];
+
+        if (isset($body["headers"])) {
+            $headers = $this->getFormattedHeaders($request, $body["headers"]);
+        }
 
         $curl_base_options = [
             CURLOPT_URL => $queryUrl,
@@ -376,13 +378,13 @@ class HttpClient implements HttpClientInterface
         return curl_getinfo($this->handle, $option);
     }
 
-    protected function getFormattedHeaders(RequestInterface $request, $multiPartRequestHeaders = []): array
+    protected function getFormattedHeaders(RequestInterface $request, $additionalHeaders = []): array
     {
         $combinedHeaders = array_change_key_case(array_merge(
             ['user-agent' => 'unirest-php/4.0', 'expect' => ''],
             $this->config->getDefaultHeaders(),
             $request->getHeaders(),
-            $multiPartRequestHeaders
+            $additionalHeaders
         ));
 
         $formattedHeaders = [];

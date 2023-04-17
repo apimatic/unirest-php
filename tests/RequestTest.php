@@ -203,7 +203,7 @@ class RequestTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
         $this->assertEquals('Mark', $response->getBody()->queryString->name);
-        $this->assertEquals('thefosk', $response->getBody()->queryString->data->nick);
+        $this->assertEquals('thefosk', $response->getBody()->queryString->nick);
     }
 
     public function testGetMultidimensionalArray()
@@ -221,9 +221,9 @@ class RequestTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
-        $this->assertEquals('value', $response->getBody()->queryString->data->key);
-        $this->assertEquals('item1', $response->getBody()->queryString->data->items[0]);
-        $this->assertEquals('item2', $response->getBody()->queryString->data->items[1]);
+        $this->assertEquals('value', $response->getBody()->queryString->key);
+        $this->assertEquals('item1', $response->getBody()->queryString->items[0]);
+        $this->assertEquals('item2', $response->getBody()->queryString->items[1]);
     }
 
     public function testGetWithDots()
@@ -238,8 +238,8 @@ class RequestTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
-        $this->assertEquals('Mark', $response->getBody()->queryString->data->{'user.name'});
-        $this->assertEquals('thefosk', $response->getBody()->queryString->data->nick);
+        $this->assertEquals('Mark', $response->getBody()->queryString->{'user.name'});
+        $this->assertEquals('thefosk', $response->getBody()->queryString->nick);
     }
 
     public function testGetWithDotsAlt()
@@ -254,8 +254,8 @@ class RequestTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
-        $this->assertEquals('Mark Bond', $response->getBody()->queryString->data->{'user.name'});
-        $this->assertEquals('thefosk', $response->getBody()->queryString->data->nick);
+        $this->assertEquals('Mark Bond', $response->getBody()->queryString->{'user.name'});
+        $this->assertEquals('thefosk', $response->getBody()->queryString->nick);
     }
     public function testGetWithEqualSign()
     {
@@ -268,7 +268,7 @@ class RequestTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
-        $this->assertEquals('Mark=Hello', $response->getBody()->queryString->data->name);
+        $this->assertEquals('Mark=Hello', $response->getBody()->queryString->name);
     }
 
     public function testGetWithEqualSignAlt()
@@ -282,7 +282,7 @@ class RequestTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
-        $this->assertEquals('Mark=Hello=John', $response->getBody()->queryString->data->name);
+        $this->assertEquals('Mark=Hello=John', $response->getBody()->queryString->name);
     }
 
     public function testGetWithComplexQuery()
@@ -312,8 +312,8 @@ class RequestTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
-        $this->assertEquals('Mark', $response->getBody()->queryString->data->nameOne);
-        $this->assertEquals('John', $response->getBody()->queryString->data->nameTwo);
+        $this->assertEquals('Mark', $response->getBody()->queryString->nameOne);
+        $this->assertEquals('John', $response->getBody()->queryString->nameTwo);
     }
 
     // HEAD
