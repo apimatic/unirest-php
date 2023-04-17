@@ -116,17 +116,13 @@ class HttpClient implements HttpClientInterface
         $post_data = '';
 
         foreach ($multipartParameters as $key => $parameter) {
-            $post_data .= '--' . $boundary . "\r\n";
+            $post_data .= '--' . $boundary . "\r\n" . 'Content-Disposition: form-data; name="' . $key . '"';
             if ($parameter instanceof \CURLFile) {
-                $post_data .= 'Content-Disposition: form-data; name="'
-                    . $key
-                    . '"; filename="' . basename($parameter->getFilename())
-                    . '"' . "\r\n";
-
+                $post_data .= '; filename="' . basename($parameter->getFilename()) . '"' . "\r\n";
                 $post_data .= 'Content-Type: ' . $parameter->getMimeType() . "\r\n\r\n";
                 $post_data .= file_get_contents($parameter->getFilename()) . "\r\n";
             } elseif (isset($parameter["headers"])) {
-                $post_data .= 'Content-Disposition: form-data; name="' . $key . '"' . "\r\n";
+                $post_data .= "\r\n";
                 foreach($parameter["headers"] as $headerKey => $headerValue) {
                     $post_data .= $headerKey . ': ' . $headerValue . "\r\n\r\n";
                 }
