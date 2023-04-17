@@ -126,7 +126,7 @@ class HttpClient implements HttpClientInterface
             if (isset($parameter["headers"]) && !empty($parameter["headers"])) {
                 $post_data .= "\r\n";
                 foreach ($parameter["headers"] as $headerKey => $headerValue) {
-                    $post_data .= $headerKey . ': ' . $headerValue . "\r\n\r\n";
+                    $post_data .= $headerKey . ': ' . $headerValue . "\r\n";
                 }
                 if (isset($parameter["data"])) {
                     $post_data .= $parameter["data"] . "\r\n";
