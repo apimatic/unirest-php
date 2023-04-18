@@ -131,10 +131,10 @@ class HttpClient implements HttpClientInterface
             $body .= "--$boundary\r\n";
             $body .= "Content-Disposition: form-data; name=\"$key\"";
             if ($parameter instanceof CURLFile) {
-                $filename = basename($parameter->getFilename());
+                $filename = $parameter->getFilename();
                 $body .= "; filename=\"$filename\"";
                 $parameter = [
-                    'data' => file_get_contents($parameter->getFilename()),
+                    'data' => file_get_contents($filename),
                     'headers' => ['Content-Type' => $parameter->getMimeType()]
                 ];
             }
