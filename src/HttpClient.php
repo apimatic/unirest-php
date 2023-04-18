@@ -86,71 +86,77 @@ class HttpClient implements HttpClientInterface
         $this->totalNumberOfConnections = 0;
     }
 
+    /**
+     * Get Body along with its additionally required headers as an array
+     * i.e. [mixed $body, array<string,string> $headers]
+     */
     protected function getBody(RequestInterface $request): array
     {
         if (empty($request->getParameters())) {
-            return [ "data" => $request->getBody(), "headers" => [] ];
+            return [$request->getBody(), []];
         }
         // special handling for form parameters i.e.
         // returning flatten array with encoded keys if any multipart parameter exists
         // OR returning concatenated encoded parameters string
+        // Also adding content-type header for simple form params
+        // While adding content-type and content-length for multipart form params
         $encodedBody = join('&', $request->getEncodedParameters());
         $multipartParameters = $request->getMultipartParameters();
         if (empty($multipartParameters)) {
-            return [ 'data' => $encodedBody, 'headers' => [ 'content-type' => 'application/x-www-form-urlencoded' ] ];
+            return [$encodedBody, ['content-type' => 'application/x-www-form-urlencoded']];
         }
         if (empty($encodedBody)) {
             return $this->createMultiPartFormData($multipartParameters);
         }
         foreach (explode('&', $encodedBody) as $param) {
             $keyValue = explode('=', $param);
-            $multipartParameters[urldecode($keyValue[0])] = urldecode($keyValue[1]);
+            $multipartParameters[urldecode($keyValue[0])] = [
+                'data' => urldecode($keyValue[1]),
+                'headers' => []
+            ];
         }
         return $this->createMultiPartFormData($multipartParameters);
     }
 
-    protected function createMultiPartFormData($multipartParameters): array
+    /**
+     * Get Multipart Form Body along with its additionally required headers
+     * as an array
+     * i.e. [string $body, array<string,string> $headers]
+     */
+    protected function createMultiPartFormData(array $multipartParameters): array
     {
         $boundary = uniqid();
-        $post_data = '';
-
+        $body = '';
         foreach ($multipartParameters as $key => $parameter) {
-            $post_data .= '--' . $boundary . "\r\n";
-            $post_data .= 'Content-Disposition: form-data; name="' . $key . '"; ';
+            $body .= "--$boundary\r\n";
+            $body .= "Content-Disposition: form-data; name=\"$key\"";
             if ($parameter instanceof CURLFile) {
-                $post_data .= 'filename="' . basename($parameter->getFilename()) . '"' . "\r\n";
-                $post_data .= 'Content-Type: ' . $parameter->getMimeType() . "\r\n\r\n";
-                $post_data .= file_get_contents($parameter->getFilename()) . "\r\n";
-                continue;
+                $filename = basename($parameter->getFilename());
+                $body .= "; filename=\"$filename\"";
+                $parameter = [
+                    'data' => file_get_contents($parameter->getFilename()),
+                    'headers' => ['Content-Type' => $parameter->getMimeType()]
+                ];
             }
-            if (isset($parameter["headers"]) && !empty($parameter["headers"])) {
-                $post_data .= "\r\n";
-                foreach ($parameter["headers"] as $headerKey => $headerValue) {
-                    $post_data .= $headerKey . ': ' . $headerValue . "\r\n\r\n";
-                }
-                if (isset($parameter["data"])) {
-                    $post_data .= $parameter["data"] . "\r\n";
-                }
-                continue;
+            foreach ($parameter['headers'] as $headerKey => $headerValue) {
+                $body .= "\r\n$headerKey: $headerValue";
             }
-
-            $post_data .= "\r\n\r\n";
-            $post_data .= $parameter . "\r\n";
+            $body .= "\r\n\r\n" . $parameter['data'] . "\r\n";
         }
-        $post_data .= '--' . $boundary . '--' . "\r\n";
+        $body .= "--$boundary--\r\n";
 
         $headers = [
-            'content-type' => 'multipart/form-data; ' . 'boundary=' . $boundary,
-            'content-length' => strlen($post_data)
+            'content-type' => "multipart/form-data; boundary=$boundary",
+            'content-length' => strlen($body)
         ];
 
-        return [ "data" => $post_data, "headers" => $headers ];
+        return [$body, $headers];
     }
 
     protected function setCurlOptions($handle, RequestInterface $request): void
     {
         $queryUrl = $request->getQueryUrl();
-        $body = $this->getBody($request);
+        list($body, $headers) = $this->getBody($request);
         if ($request->getHttpMethod() !== RequestMethod::GET) {
             if ($request->getHttpMethod() === RequestMethod::POST) {
                 curl_setopt($handle, CURLOPT_POST, true);
@@ -161,22 +167,16 @@ class HttpClient implements HttpClientInterface
                 curl_setopt($handle, CURLOPT_CUSTOMREQUEST, strtoupper($request->getHttpMethod()));
             }
 
-            if (!is_null($body) && !is_null($body["data"])) {
-                curl_setopt($handle, CURLOPT_POSTFIELDS, $body["data"]);
+            if (!is_null($body)) {
+                curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
             }
-        } elseif (is_array($body["data"])) {
+        } elseif (is_array($body)) {
             if (strpos($queryUrl, '?') !== false) {
                 $queryUrl .= '&';
             } else {
                 $queryUrl .= '?';
             }
-            $queryUrl .= http_build_query(Request::buildHTTPCurlQuery($body["data"]));
-        }
-
-        $headers = [];
-
-        if (isset($body["headers"])) {
-            $headers = $this->getFormattedHeaders($request, $body["headers"]);
+            $queryUrl .= http_build_query(Request::buildHTTPCurlQuery($body));
         }
 
         $curl_base_options = [
@@ -184,7 +184,7 @@ class HttpClient implements HttpClientInterface
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($request, $headers),
             CURLOPT_HEADER => true,
             CURLOPT_SSL_VERIFYPEER => $this->config->shouldVerifyPeer(),
             // CURLOPT_SSL_VERIFYHOST accepts only 0 (false) or 2 (true).

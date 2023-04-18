@@ -306,14 +306,14 @@ class RequestTest extends TestCase
     {
         $httpClient = new HttpClient();
         $response = $httpClient->execute(new Request('http://mockbin.com/request', RequestMethod::GET, [], [
-            'nameOne' => 'Mark',
-            'nameTwo' => 'John'
+            'name[0]' => 'Mark',
+            'name[1]' => 'John'
         ]));
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('GET', $response->getBody()->method);
-        $this->assertEquals('Mark', $response->getBody()->queryString->nameOne);
-        $this->assertEquals('John', $response->getBody()->queryString->nameTwo);
+        $this->assertEquals('Mark', $response->getBody()->queryString->name[0]);
+        $this->assertEquals('John', $response->getBody()->queryString->name[1]);
     }
 
     // HEAD
