@@ -9,7 +9,6 @@ use CoreInterfaces\Core\Request\RequestMethod;
 use CoreInterfaces\Core\Response\ResponseInterface;
 use CoreInterfaces\Http\HttpClientInterface;
 use CoreInterfaces\Http\RetryOption;
-use CURLFile;
 use DateTime;
 use Unirest\Request\Request;
 
@@ -86,77 +85,33 @@ class HttpClient implements HttpClientInterface
         $this->totalNumberOfConnections = 0;
     }
 
-    /**
-     * Get Body along with its additionally required headers as an array
-     * i.e. [mixed $body, array<string,string> $headers]
-     */
-    protected function getBody(RequestInterface $request): array
+    protected function getBody(RequestInterface $request)
     {
         if (empty($request->getParameters())) {
-            return [$request->getBody(), []];
+            return $request->getBody();
         }
         // special handling for form parameters i.e.
         // returning flatten array with encoded keys if any multipart parameter exists
         // OR returning concatenated encoded parameters string
-        // Also adding content-type header for simple form params
-        // While adding content-type and content-length for multipart form params
         $encodedBody = join('&', $request->getEncodedParameters());
         $multipartParameters = $request->getMultipartParameters();
         if (empty($multipartParameters)) {
-            return [$encodedBody, ['content-type' => 'application/x-www-form-urlencoded']];
+            return $encodedBody;
         }
         if (empty($encodedBody)) {
-            return $this->createMultiPartFormData($multipartParameters);
+            return $multipartParameters;
         }
         foreach (explode('&', $encodedBody) as $param) {
             $keyValue = explode('=', $param);
-            $multipartParameters[urldecode($keyValue[0])] = [
-                'data' => urldecode($keyValue[1]),
-                'headers' => []
-            ];
+            $multipartParameters[urldecode($keyValue[0])] = urldecode($keyValue[1]);
         }
-        return $this->createMultiPartFormData($multipartParameters);
-    }
-
-    /**
-     * Get Multipart Form Body along with its additionally required headers
-     * as an array
-     * i.e. [string $body, array<string,string> $headers]
-     */
-    protected function createMultiPartFormData(array $multipartParameters): array
-    {
-        $boundary = uniqid();
-        $body = '';
-        foreach ($multipartParameters as $key => $parameter) {
-            $body .= "--$boundary\r\n";
-            $body .= "Content-Disposition: form-data; name=\"$key\"";
-            if ($parameter instanceof CURLFile) {
-                $filename = $parameter->getFilename();
-                $body .= "; filename=\"$filename\"";
-                $parameter = [
-                    'data' => file_get_contents($filename),
-                    'headers' => ['Content-Type' => $parameter->getMimeType()]
-                ];
-            }
-            foreach ($parameter['headers'] as $headerKey => $headerValue) {
-                $body .= "\r\n$headerKey: $headerValue";
-            }
-            $body .= "\r\n\r\n" . $parameter['data'] . "\r\n";
-        }
-        $body .= "--$boundary--\r\n";
-
-        $headers = [
-            'content-type' => "multipart/form-data; boundary=$boundary",
-            'content-length' => strlen($body)
-        ];
-
-        return [$body, $headers];
+        return $multipartParameters;
     }
 
     protected function setCurlOptions($handle, RequestInterface $request): void
     {
         $queryUrl = $request->getQueryUrl();
-        list($body, $headers) = $this->getBody($request);
+        $body = $this->getBody($request);
         if ($request->getHttpMethod() !== RequestMethod::GET) {
             if ($request->getHttpMethod() === RequestMethod::POST) {
                 curl_setopt($handle, CURLOPT_POST, true);
@@ -184,7 +139,7 @@ class HttpClient implements HttpClientInterface
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($request, $headers),
+            CURLOPT_HTTPHEADER => $this->getFormattedHeaders($request),
             CURLOPT_HEADER => true,
             CURLOPT_SSL_VERIFYPEER => $this->config->shouldVerifyPeer(),
             // CURLOPT_SSL_VERIFYHOST accepts only 0 (false) or 2 (true).
@@ -378,21 +333,23 @@ class HttpClient implements HttpClientInterface
         return curl_getinfo($this->handle, $option);
     }
 
-    protected function getFormattedHeaders(RequestInterface $request, $additionalHeaders = []): array
+    protected function getFormattedHeaders(RequestInterface $request): array
     {
         $combinedHeaders = array_change_key_case(array_merge(
             ['user-agent' => 'unirest-php/4.0', 'expect' => ''],
             $this->config->getDefaultHeaders(),
-            $request->getHeaders(),
-            $additionalHeaders
+            $request->getHeaders()
         ));
-
         $formattedHeaders = [];
         foreach ($combinedHeaders as $key => $val) {
             $key = trim($key);
+            if (!empty($request->getParameters()) && $key == 'content-type') {
+                // special handling for form parameters i.e. removing content-type header
+                // As, Curl will automatically add content-type for form params
+                continue;
+            }
             $formattedHeaders[] = "$key: $val";
         }
-
         return $formattedHeaders;
     }
 
