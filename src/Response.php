@@ -54,6 +54,9 @@ class Response implements ResponseInterface
         return $this->raw_body;
     }
 
+    /**
+     * @return mixed
+     */
     public function getBody()
     {
         return $this->body;
