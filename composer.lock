@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/apimatic/core-interfaces-php.git",
-                "reference": "37890bbf4ac78bf311b6656ae37a701b4d6e4416"
+                "reference": "84f76cedc08e0edcc1c030d5a525fa29398b17aa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/apimatic/core-interfaces-php/zipball/37890bbf4ac78bf311b6656ae37a701b4d6e4416",
-                "reference": "37890bbf4ac78bf311b6656ae37a701b4d6e4416",
+                "url": "https://api.github.com/repos/apimatic/core-interfaces-php/zipball/84f76cedc08e0edcc1c030d5a525fa29398b17aa",
+                "reference": "84f76cedc08e0edcc1c030d5a525fa29398b17aa",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 "issues": "https://github.com/apimatic/core-interfaces-php/issues",
                 "source": "https://github.com/apimatic/core-interfaces-php/tree/test-logging"
             },
-            "time": "2024-04-30T13:47:23+00:00"
+            "time": "2024-05-01T03:09:12+00:00"
         },
         {
             "name": "psr/log",
