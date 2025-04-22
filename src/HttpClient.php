@@ -171,8 +171,8 @@ class HttpClient implements HttpClientInterface
             ]);
         }
 
-        if ($this->config->getProxy()['address'] !== false) {
-            $proxy = $this->config->getProxy();
+        $proxy = $this->config->getProxy();
+        if (!empty($proxy['address'])) {
             curl_setopt_array($handle, [
                 CURLOPT_PROXYTYPE       => $proxy['type'],
                 CURLOPT_PROXY           => $proxy['address'],
