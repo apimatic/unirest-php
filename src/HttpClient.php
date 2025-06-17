@@ -107,7 +107,6 @@ class HttpClient implements HttpClientInterface
         }
         return $multipartParameters;
     }
-
     protected function setCurlOptions($handle, RequestInterface $request): void
     {
         $queryUrl = $request->getQueryUrl();
@@ -115,15 +114,15 @@ class HttpClient implements HttpClientInterface
         if ($request->getHttpMethod() !== RequestMethod::GET) {
             if ($request->getHttpMethod() === RequestMethod::POST) {
                 curl_setopt($handle, CURLOPT_POST, true);
+                curl_setopt($handle, CURLOPT_POSTFIELDS, is_null($body) ? [] : $body);
             } else {
                 if ($request->getHttpMethod() === RequestMethod::HEAD) {
                     curl_setopt($handle, CURLOPT_NOBODY, true);
                 }
                 curl_setopt($handle, CURLOPT_CUSTOMREQUEST, strtoupper($request->getHttpMethod()));
-            }
-
-            if (!is_null($body)) {
-                curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+                if (!is_null($body)) {
+                    curl_setopt($handle, CURLOPT_POSTFIELDS, $body);
+                }
             }
         } elseif (is_array($body)) {
             if (strpos($queryUrl, '?') !== false) {
