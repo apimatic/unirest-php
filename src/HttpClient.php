@@ -55,7 +55,7 @@ class HttpClient implements HttpClientInterface
             $response  = curl_exec($this->handle);
             $error     = curl_error($this->handle);
             $info      = $this->getInfo();
-            if (empty($error)) {
+            if (empty($error) && is_string($response)) {
                 $header_size = $info['header_size'];
                 $httpCode    = (int)$info['http_code'];
                 $headers     = $this->parseHeaders(substr($response, 0, $header_size));
