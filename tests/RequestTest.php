@@ -100,7 +100,7 @@ class RequestTest extends TestCase
         $this->assertEquals(4, $httpClientChild->getTotalNumberOfConnections());
     }
 
-    private function assertConnectionHeader($response, $expected)
+    private function assertConnectionHeader($response, $expected): void
     {
         $connectionHeader = $response->getHeaders()['Connection'];
         if (is_array($connectionHeader)) {
