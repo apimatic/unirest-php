@@ -1,0 +1,48 @@
+Array
+(
+    [method] => POST
+    [content_type] => multipart/form-data; boundary=------------------------6f3af474339e5eb7
+    [_POST] => Array
+        (
+            [name] => Mark
+        )
+
+    [_FILES] => Array
+        (
+            [files] => Array
+                (
+                    [name] => Array
+                        (
+                            [owl.gif] => upload.txt
+                        )
+
+                    [full_path] => Array
+                        (
+                            [owl.gif] => C:\Users\Hamza\Desktop\Repos\unirest-php\tests/Mocking/upload.txt
+                        )
+
+                    [type] => Array
+                        (
+                            [owl.gif] => application/octet-stream
+                        )
+
+                    [tmp_name] => Array
+                        (
+                            [owl.gif] => C:\Users\Hamza\AppData\Local\Temp\php789F.tmp
+                        )
+
+                    [error] => Array
+                        (
+                            [owl.gif] => 0
+                        )
+
+                    [size] => Array
+                        (
+                            [owl.gif] => 15
+                        )
+
+                )
+
+        )
+
+)
