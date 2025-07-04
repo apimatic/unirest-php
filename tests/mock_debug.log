@@ -1,7 +1,7 @@
 Array
 (
     [method] => POST
-    [content_type] => multipart/form-data; boundary=------------------------6f3af474339e5eb7
+    [content_type] => multipart/form-data; boundary=------------------------783e066e19b90d08
     [_POST] => Array
         (
             [name] => Mark
@@ -28,7 +28,7 @@ Array
 
                     [tmp_name] => Array
                         (
-                            [owl.gif] => C:\Users\Hamza\AppData\Local\Temp\php789F.tmp
+                            [owl.gif] => C:\Users\Hamza\AppData\Local\Temp\phpD779.tmp
                         )
 
                     [error] => Array

@@ -8,13 +8,13 @@ $connectionPool = [];
 function getConnectionKey($requestUri)
 {
     // Extract domain/key from URL path
-    if (preg_match('#^/get$#', $requestUri)) {
+    if (preg_match('#^/get$#', $requestUri) === 1) {
         return 'get';
     }
-    if (preg_match('#^/t/([^/]+)$#', $requestUri, $matches)) {
+    if (preg_match('#^/t/([^/]+)$#', $requestUri, $matches) === 1) {
         return 't-' . $matches[1];
     }
-    if (preg_match('#^/([a-z0-9\.\-]+)(/|$)#', $requestUri, $matches)) {
+    if (preg_match('#^/([a-z0-9\.\-]+)(/|$)#', $requestUri, $matches) === 1) {
         return preg_replace('/[^a-z0-9]/', '-', strtolower($matches[1]));
     }
     return 'default';
@@ -26,7 +26,7 @@ if (!function_exists('getallheaders')) {
     {
         $headers = [];
         foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) == 'HTTP_') {
+            if (substr($name, 0, 5) === 'HTTP_') {
                 $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
             }
         }
@@ -34,8 +34,8 @@ if (!function_exists('getallheaders')) {
     }
 }
 
-$requestUri = $_SERVER['REQUEST_URI'];
-$requestMethod = $_SERVER['REQUEST_METHOD'];
+$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $requestHeaders = getallheaders();
 $body = file_get_contents('php://input');
 
@@ -97,16 +97,16 @@ if ($requestUri === '/get') {
 }
 
 // /request endpoint (already implemented, but add HEAD support)
-if (preg_match('#^/request#', $requestUri)) {
+if (preg_match('#^/request#', $requestUri) === 1) {
     // Handle cookies
     $cookies = [];
     if (isset($_SERVER['HTTP_COOKIE'])) {
         foreach (explode('; ', $_SERVER['HTTP_COOKIE']) as $cookie) {
-            [$key, $value] = explode('=', $cookie, 2);
+            [$key, $value] = explode('=', $cookie, 2) + [1 => ''];
             $cookies[$key] = $value;
         }
     }
-    // Handle headers
+    // Handle headers - normalize to lowercase keys
     $headers = [];
     foreach ($requestHeaders as $key => $value) {
         $headers[strtolower($key)] = $value;
@@ -117,7 +117,7 @@ if (preg_match('#^/request#', $requestUri)) {
     if ($query !== null) {
         $pairs = explode('&', $query);                // explode on raw string
         foreach ($pairs as $pair) {
-            if (empty($pair)) {
+            if ($pair === '') {
                 continue;
             }
             [$k, $v] = explode('=', $pair, 2) + [1 => ''];
@@ -129,8 +129,8 @@ if (preg_match('#^/request#', $requestUri)) {
 
     // Handle POST/PUT/PATCH/DELETE data
     $postData = null;
-    if (in_array($requestMethod, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
-        $contentType = isset($headers['content-type']) ? $headers['content-type'] : '';
+    if (in_array($requestMethod, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+        $contentType = $headers['content-type'] ?? '';
         if (strpos($contentType, 'application/json') !== false) {
             $postData = json_decode($body);
         } elseif (strpos($contentType, 'multipart/form-data') !== false) {
@@ -150,6 +150,7 @@ if (preg_match('#^/request#', $requestUri)) {
             $postData = (object) $_POST;
         }
     }
+
     file_put_contents(__DIR__ . '/mock_debug.log', print_r([
         'method' => $requestMethod,
         'content_type' => $headers['content-type'] ?? '',
@@ -180,7 +181,7 @@ if (preg_match('#^/request#', $requestUri)) {
 }
 
 // /delay/{ms} endpoint
-if (preg_match('#^/delay/(\d+)$#', $requestUri, $matches)) {
+if (preg_match('#^/delay/(\d+)$#', $requestUri, $matches) === 1) {
     $delay = (int)$matches[1];
     usleep($delay * 1000); // Delay in milliseconds
     header_remove();

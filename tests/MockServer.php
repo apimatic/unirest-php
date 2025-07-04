@@ -21,7 +21,7 @@ class MockServer
         $serverScript = realpath(__DIR__ . '/mock-server.php');
         $logFile = __DIR__ . '/server.log';
 
-        if (!$serverScript) {
+        if ($serverScript === false) {  // Explicit check for false
             throw new \RuntimeException("Could not resolve mock-server.php. Check the path!");
         }
 
@@ -53,7 +53,7 @@ class MockServer
         $timeout = 1; // 1 second timeout
 
         $fp = @fsockopen($host, $port, $errno, $errstr, $timeout);
-        if ($fp) {
+        if ($fp !== false) {  // Explicit check for false
             fclose($fp);
             return true; // port open → server running
         }
