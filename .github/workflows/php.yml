@@ -38,3 +38,10 @@ jobs:
         run: composer analyze
       - name: Run tests
         run: composer test-coverage-text
+        
+      - name: SonarQube Scan
+        if: ${{ matrix.php == '8.1' && github.actor != 'dependabot[bot]' }}
+        uses: SonarSource/sonarqube-scan-action@v5.2.0
+        env:
+         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
