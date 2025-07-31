@@ -3,6 +3,8 @@
 [![version][packagist-version]][packagist-url]
 [![Downloads][packagist-downloads]][packagist-url]
 [![Tests](https://github.com/apimatic/unirest-php/actions/workflows/php.yml/badge.svg)](https://github.com/apimatic/unirest-php/actions/workflows/php.yml)
+[![Maintainability Rating][maintainability-badge]][maintainability-url]
+[![Vulnerabilities][vulnerabilities-badge]][vulnerabilities-url]
 [![License][packagist-license]][license-url]
 
 Unirest is a set of lightweight HTTP libraries available in [multiple languages](http://unirest.io).
@@ -437,3 +439,8 @@ $httpClient->getInfo();
 [packagist-license]: https://img.shields.io/packagist/l/apimatic/unirest-php.svg?style=flat
 [packagist-version]: https://img.shields.io/packagist/v/apimatic/unirest-php.svg?style=flat
 [packagist-downloads]: https://img.shields.io/packagist/dm/apimatic/unirest-php.svg?style=flat
+[maintainability-badge]: https://sonarcloud.io/api/project_badges/measure?project=apimatic_unirest-php&metric=sqale_rating
+[maintainability-url]: https://sonarcloud.io/summary/new_code?id=apimatic_unirest-php
+[vulnerabilities-badge]: https://sonarcloud.io/api/project_badges/measure?project=apimatic_unirest-php&metric=vulnerabilities
+[vulnerabilities-url]: https://sonarcloud.io/summary/new_code?id=apimatic_unirest-php
+
