@@ -37,7 +37,7 @@ jobs:
       - name: Run analyze
         run: composer analyze
       - name: Run tests
-        run: composer test-coverage-text
+        run: composer test-ci
         
       - name: SonarQube Scan
         if: ${{ matrix.php == '8.1' && github.actor != 'dependabot[bot]' }}
