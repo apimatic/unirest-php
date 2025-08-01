@@ -2,70 +2,11 @@
 
 namespace Unirest\Test\Mocking;
 
-// Track active connections (simplified simulation)
-$connectionPool = [];
-
-function getConnectionKey($requestUri)
-{
-    // Extract domain/key from URL path
-    if (preg_match('#^/get$#', $requestUri) === 1) {
-        return 'get';
-    }
-    if (preg_match('#^/t/([^/]+)$#', $requestUri, $matches) === 1) {
-        return 't-' . $matches[1];
-    }
-    if (preg_match('#^/([a-z0-9\.\-]+)(/|$)#', $requestUri, $matches) === 1) {
-        return preg_replace('/[^a-z0-9]/', '-', strtolower($matches[1]));
-    }
-    return 'default';
-}
-
-// Helper to get all headers
-if (!function_exists('getallheaders')) {
-    function getallheaders()
-    {
-        $headers = [];
-        foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) === 'HTTP_') {
-                $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
-            }
-        }
-        return $headers;
-    }
-}
-
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-$requestHeaders = getallheaders();
+$requestHeaders = getAllHeaders();
 $body = file_get_contents('php://input');
-
-// Determine Connection header value to send back based on request and endpoint
-function getConnectionResponseHeader($requestUri, $requestHeaders)
-{
-    // Special handling for /get endpoint based on test expectation
-    if ($requestUri === '/get') {
-        if (!isset($requestHeaders['connection'])) {
-            // First request, no connection header sent: respond with "close,keep-alive"
-            return 'close,keep-alive';
-        } elseif (strtolower($requestHeaders['connection']) === 'close') {
-            // Request asks to close connection
-            return 'close';
-        } else {
-            // Default to keep-alive
-            return 'keep-alive';
-        }
-    }
-
-    // For other endpoints, just respond with connection header or keep-alive
-    if (isset($requestHeaders['connection']) && strtolower($requestHeaders['connection']) === 'close') {
-        return 'close';
-    }
-
-    return 'keep-alive';
-}
-
 $connectionResponseHeader = getConnectionResponseHeader($requestUri, $requestHeaders);
-
 header('Content-Type: application/json');
 
 // Unified connection test handler for all test domains except /get (handled separately)
@@ -151,13 +92,6 @@ if (preg_match('#^/request#', $requestUri) === 1) {
         }
     }
 
-    file_put_contents(__DIR__ . '/mock_debug.log', print_r([
-        'method' => $requestMethod,
-        'content_type' => $headers['content-type'] ?? '',
-        '_POST' => $_POST,
-        '_FILES' => $_FILES,
-    ], true));
-
     header_remove();
     header('Connection: ' . $connectionResponseHeader);
     http_response_code(200);
@@ -207,3 +141,38 @@ header_remove();
 header('Connection: ' . $connectionResponseHeader);
 http_response_code(404);
 echo json_encode(['error' => 'Not Found']);
+
+function getConnectionResponseHeader($requestUri, $requestHeaders): string
+{
+    // Special handling for /get endpoint based on test expectation
+    if ($requestUri === '/get') {
+        if (!isset($requestHeaders['connection'])) {
+            // First request, no connection header sent: respond with "close,keep-alive"
+            return 'close,keep-alive';
+        } elseif (strtolower($requestHeaders['connection']) === 'close') {
+            // Request asks to close connection
+            return 'close';
+        } else {
+            // Default to keep-alive
+            return 'keep-alive';
+        }
+    }
+
+    // For other endpoints, just respond with connection header or keep-alive
+    if (isset($requestHeaders['connection']) && strtolower($requestHeaders['connection']) === 'close') {
+        return 'close';
+    }
+
+    return 'keep-alive';
+}
+
+function getAllHeaders(): array
+{
+    $headers = [];
+    foreach ($_SERVER as $name => $value) {
+        if (substr($name, 0, 5) === 'HTTP_') {
+            $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
+        }
+    }
+    return $headers;
+}

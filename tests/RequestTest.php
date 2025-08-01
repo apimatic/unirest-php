@@ -10,7 +10,7 @@ use Unirest\HttpClient;
 use Unirest\Request\Body;
 use Unirest\Request\Request;
 use Unirest\Test\Mocking\HttpClientChild;
-use Unirest\Test\MockServer;
+use Unirest\Test\Mocking\MockServer;
 
 class RequestTest extends TestCase
 {
