@@ -50,6 +50,7 @@
   "scripts": {
     "test": "phpunit",
     "test-coverage": "phpunit --coverage-html=coverage",
+    "test-ci": "phpunit --coverage-text --coverage-clover=coverage-clover.xml",
     "test-coverage-text": "phpunit --coverage-text",
     "lint": "phpcs --standard=phpcs-ruleset.xml src/",
     "lint-test": "phpcs --standard=phpcs-ruleset.xml tests/",

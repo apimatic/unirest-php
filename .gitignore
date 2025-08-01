@@ -5,3 +5,4 @@ composer.phar
 coverage
 vendor*
 .phpunit.result.cache
+coverage-clover.xml
