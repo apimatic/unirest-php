@@ -217,7 +217,7 @@ class Configuration
      */
     public function curlOpts(array $options): self
     {
-        $this->curlOpts = array_merge($this->curlOpts, $options);
+        $this->curlOpts = $this->curlOpts + $options;
         return $this;
     }
 
