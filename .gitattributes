@@ -1,0 +1,23 @@
+# Exclude development-only files from the distribution archive that Composer
+# downloads for consumers (`composer install` uses the dist zip by default).
+#
+# Without this, dev artifacts land in every consumer's vendor/ directory. In
+# particular the committed composer.lock is inert there -- Composer only ever
+# reads the *root* project's lock file, and a dependency's require-dev is never
+# installed -- but filesystem-walking security scanners still parse it and
+# report our pinned dev-tool versions as findings against the consumer.
+#
+# CI regenerates dependencies with `composer update`, so nothing here is needed
+# by consumers or by our own builds.
+
+/.github/                   export-ignore
+/.phan/                     export-ignore
+/tests/                     export-ignore
+/composer.lock              export-ignore
+/phpcs-ruleset.xml          export-ignore
+/phpunit.xml                export-ignore
+/sonar-project.properties   export-ignore
+/CONTRIBUTING.md            export-ignore
+/.editorconfig              export-ignore
+/.gitattributes             export-ignore
+/.gitignore                 export-ignore
